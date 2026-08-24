@@ -1,4 +1,4 @@
-import { h, $, clear, toast, restTimer } from './ui.js';
+import { h, $, clear, toast, restTimer, sheet } from './ui.js';
 import * as store from './store.js';
 import * as today from './views/today.js';
 import * as plan from './views/plan.js';
@@ -91,7 +91,8 @@ function boot() {
     VIEWS[current].render(main, nav);
   });
 
-  if ('serviceWorker' in navigator) {
+  // The single-file build has nothing to precache and no sw.js to fetch.
+  if (!window.__ATN_SINGLE_FILE && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(() => { /* offline support is a bonus, not a requirement */ });
     });
@@ -99,8 +100,7 @@ function boot() {
 }
 
 function showWelcome() {
-  import('./ui.js').then(({ sheet }) => {
-    sheet('Welcome to Above the Net', h('div', { class: 'detail' },
+  sheet('Welcome to Above the Net', h('div', { class: 'detail' },
       h('p', { text: 'This is a 16-week block-periodized program built for one thing: making a 6\'3" volleyball player leaner, faster, and harder to break, while adding real inches to the approach jump.' }),
       h('h4', { text: 'Start here' }),
       h('ol', { class: 'cues' },
@@ -114,7 +114,6 @@ function showWelcome() {
       { label: 'See the plan', onClick: () => nav('plan') },
       { label: 'Start training', kind: 'primary', onClick: () => nav('today') }
     ]);
-  });
 }
 
 boot();
