@@ -636,3 +636,38 @@ button { font: inherit; color: inherit; }
 @media (min-width: 620px) {
   .tabbar { max-width: 620px; margin: 0 auto; border-radius: 18px 18px 0 0; border: 1px solid var(--line); border-bottom: none; }
 }
+
+/* ------------------------------------------------------- GAIN-PHASE CARDS */
+.card--advice { border-left: 3px solid var(--line-2); }
+.card--advice.is-good { border-left-color: var(--good); }
+.card--advice.is-warn { border-left-color: var(--warn); }
+.advice-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+.advice-line { font-size: 16px; font-weight: 700; letter-spacing: -.015em; line-height: 1.3; }
+.card--advice.is-good .advice-line { color: #8fe6b6; }
+.card--advice.is-warn .advice-line { color: #f7c98f; }
+.card--advice .btn { align-self: flex-start; }
+
+.card--shake { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, var(--card)), var(--card) 70%); }
+.shakelist { margin: 0; padding-left: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
+.shakelist li { font-size: 12.5px; color: var(--fg-2); }
+
+.measuregrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.patternbars { display: flex; flex-direction: column; gap: 6px; }
+.advice-line--sm { font-size: 13.5px; font-weight: 700; }
+.tone-good { color: #8fe6b6; }
+.tone-warn { color: #f7c98f; }
+.tone-neutral { color: var(--fg-2); }
+
+.phaserow { display: flex; flex-direction: column; gap: 10px; }
+.phase {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 11px 12px; border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+}
+.phase-weeks { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-3); font-weight: 700; }
+.phase-name { font-size: 14.5px; }
+.phase-detail { font-size: 12.5px; color: var(--fg-2); line-height: 1.5; }
+.loadbar--est { background: rgba(255, 255, 255, .045); border-color: var(--line-2); border-style: dashed; }
+.loadbar--first { background: none; border-style: dashed; border-color: var(--line-2); }
+.loadbar--first .loadbar-hint { font-size: 12px; line-height: 1.5; }

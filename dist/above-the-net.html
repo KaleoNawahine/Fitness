@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Above the Net</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0d10">
@@ -645,6 +646,41 @@ button { font: inherit; color: inherit; }
   .tabbar { max-width: 620px; margin: 0 auto; border-radius: 18px 18px 0 0; border: 1px solid var(--line); border-bottom: none; }
 }
 
+/* ------------------------------------------------------- GAIN-PHASE CARDS */
+.card--advice { border-left: 3px solid var(--line-2); }
+.card--advice.is-good { border-left-color: var(--good); }
+.card--advice.is-warn { border-left-color: var(--warn); }
+.advice-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+.advice-line { font-size: 16px; font-weight: 700; letter-spacing: -.015em; line-height: 1.3; }
+.card--advice.is-good .advice-line { color: #8fe6b6; }
+.card--advice.is-warn .advice-line { color: #f7c98f; }
+.card--advice .btn { align-self: flex-start; }
+
+.card--shake { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, var(--card)), var(--card) 70%); }
+.shakelist { margin: 0; padding-left: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
+.shakelist li { font-size: 12.5px; color: var(--fg-2); }
+
+.measuregrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.patternbars { display: flex; flex-direction: column; gap: 6px; }
+.advice-line--sm { font-size: 13.5px; font-weight: 700; }
+.tone-good { color: #8fe6b6; }
+.tone-warn { color: #f7c98f; }
+.tone-neutral { color: var(--fg-2); }
+
+.phaserow { display: flex; flex-direction: column; gap: 10px; }
+.phase {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 11px 12px; border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+}
+.phase-weeks { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-3); font-weight: 700; }
+.phase-name { font-size: 14.5px; }
+.phase-detail { font-size: 12.5px; color: var(--fg-2); line-height: 1.5; }
+.loadbar--est { background: rgba(255, 255, 255, .045); border-color: var(--line-2); border-style: dashed; }
+.loadbar--first { background: none; border-style: dashed; border-color: var(--line-2); }
+.loadbar--first .loadbar-hint { font-size: 12px; line-height: 1.5; }
+
 </style>
 
 <div id="app">
@@ -1284,11 +1320,189 @@ const EXERCISES = {
     cues: ['Toe from the wall, drive the knee to touch, heel down.', 'Measure toe-to-wall distance in cm.', 'Target: 10cm+ both sides.'],
     why: 'Screens the mobility restriction most likely to limit your jump and beat up your knees.'
   },
+  test_measure: {
+    name: 'Tape Measurements',
+    cat: 'test', pattern: 'test', loadType: 'time',
+    cues: ['Cold, not after training — a pumped arm reads big and means nothing.',
+      'Arm flexed at the peak, chest at the nipple line, thigh at the midpoint.',
+      'Same spot, same tension, same time of day, every single time.'],
+    why: 'On a gaining phase the tape is your best evidence that the weight is going where you want it. Arm, chest and thigh up while the waist holds flat is exactly the picture you are after.'
+  },
   test_bodycomp: {
     name: 'Body Composition Check',
     cat: 'test', pattern: 'test', loadType: 'time',
     cues: ['Morning, fasted, after the bathroom.', 'Weight, navel waist measurement, 3 photos (front/side/back).', 'Same conditions every time or the data is noise.'],
-    why: 'Weight alone lies during recomposition. Waist plus photos tell the truth.'
+    why: 'Weight alone lies. Waist, measurements and photos tell the truth.'
+  },
+
+  /* ------------------------------------------------------ MASS: LOWER */
+  leg_press: {
+    name: 'Leg Press',
+    cat: 'strength', pattern: 'squat', loadType: 'rpe',
+    cues: ['Feet mid-platform, knees track over the toes.',
+      'Come down until the hips just start to tuck, then stop.',
+      'Do not lock the knees out hard at the top — stay under tension.'],
+    why: 'Lets you pile on quad volume without the spinal and stabiliser cost of another squat. For a tall lifter this is where a lot of leg size actually comes from.'
+  },
+  hack_squat: {
+    name: 'Hack Squat',
+    cat: 'strength', pattern: 'squat', loadType: 'rpe',
+    cues: ['Back flat on the pad, feet low on the platform.', 'Sink deep — the machine supports you, use the range.',
+      'Drive through the whole foot, no heel lift.'],
+    why: 'The most quad-biased loaded squat pattern there is. If you only have a leg press, use that instead.'
+  },
+  leg_ext: {
+    name: 'Leg Extension',
+    cat: 'accessory', pattern: 'squat', loadType: 'rpe',
+    cues: ['Squeeze hard at full extension for a beat.', 'Lower for 3 seconds, no clanging the stack.',
+      'Point the toes up to bias the quad.'],
+    why: 'The only movement that loads the quad at short length. Cheap growth with almost no systemic fatigue.'
+  },
+  walking_lunge: {
+    name: 'Walking Lunge',
+    cat: 'strength', pattern: 'lunge', loadType: 'rpe',
+    cues: ['Long stride, front shin close to vertical.', 'Drive straight up out of the bottom.',
+      'Keep the torso tall — no falling forward.'],
+    why: 'Loaded single-leg work through a long stride. Adds glute and quad size and doubles as usable court strength.'
+  },
+  pause_squat: {
+    name: 'Pause Squat',
+    cat: 'strength', pattern: 'squat', loadType: 'pct', ref: 'squat',
+    cues: ['Full 2-second dead stop at the bottom.', 'Stay braced through the pause — do not relax and bounce.',
+      'Explode out of the hole.'],
+    why: 'Kills the stretch reflex so the muscle does all the work. Builds strength exactly where you are weakest.'
+  },
+  seated_leg_curl: {
+    name: 'Seated Leg Curl',
+    cat: 'strength', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Hips strapped down, torso upright.', 'Curl hard, hold the peak a beat, lower for 3 seconds.',
+      'Do not let the hips rise to help.'],
+    why: 'Trains the hamstring at long muscle length, which is where most of its growth comes from — and it is the single best hamstring hypertrophy machine.'
+  },
+  lying_leg_curl: {
+    name: 'Lying Leg Curl',
+    cat: 'accessory', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Hips pressed into the pad.', 'Full range, controlled negative.', 'Point the toes to shift work into the hamstring.'],
+    why: 'Complements the seated version by loading the hamstring at short length. Different stimulus, same muscle.'
+  },
+  back_ext: {
+    name: '45° Back Extension',
+    cat: 'accessory', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Round down slowly, then extend to a straight line and stop.',
+      'Squeeze the glutes to finish, not the low back.', 'Hug a plate to add load.'],
+    why: 'Glutes, hamstrings and spinal erectors with almost no fatigue cost. Great volume filler on a hinge day.'
+  },
+
+  /* ------------------------------------------------------ MASS: PUSH */
+  incline_bb_press: {
+    name: 'Incline Barbell Press',
+    cat: 'strength', pattern: 'push', loadType: 'pct', ref: 'bench',
+    cues: ['Bench at 30°, shoulder blades tucked down.', 'Bar to the upper chest, elbows about 45°.',
+      'Press in a slight arc back over the shoulders.'],
+    why: 'Upper chest and front delt with a heavy barbell. Percentages here run off your flat bench max.'
+  },
+  db_flat_press: {
+    name: 'Flat DB Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Wrists stacked over the elbows.', 'Lower until you feel a real chest stretch, no further.',
+      'Press up and slightly together.'],
+    why: 'More range than a barbell and each side works independently. Kinder to a tall lifter\'s shoulders.'
+  },
+  cable_fly: {
+    name: 'Cable Fly',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Slight forward lean, soft elbows held at one angle.', 'Bring the hands together and squeeze for a beat.',
+      'Control the stretch — this is where the growth is.'],
+    why: 'Loads the chest at long length with constant tension, which pressing alone never does.'
+  },
+  db_ohp: {
+    name: 'Seated DB Shoulder Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Back supported, ribs down.', 'Press to full reach without clanging the bells together.',
+      'Lower until the elbows are just below shoulder height.'],
+    why: 'Front and side delt volume with a friendlier path than a barbell — good for shoulders that swing all week.'
+  },
+  pushdown: {
+    name: 'Triceps Pushdown',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Elbows pinned to the ribs.', 'Lock out fully and squeeze.', 'Let the weight stretch the triceps at the top.'],
+    why: 'High-volume triceps work with no elbow stress. Pairs with an overhead variation for full coverage.'
+  },
+  skullcrusher: {
+    name: 'EZ-Bar Skullcrusher',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Lower to just behind the head, not to the forehead.', 'Elbows stay pointed at the ceiling.',
+      'Stop short of a hard lockout to keep tension.'],
+    why: 'Loads the long head of the triceps at length, which is the biggest of the three and the one that adds arm size.'
+  },
+  close_grip_bench: {
+    name: 'Close-Grip Bench Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Hands just inside shoulder width — not narrow.', 'Elbows tucked, bar to the lower chest.',
+      'Drive with the triceps.'],
+    why: 'Lets you load the triceps heavily with a compound. Adds pressing strength and arm mass at once.'
+  },
+
+  /* ------------------------------------------------------ MASS: PULL */
+  lat_pulldown: {
+    name: 'Lat Pulldown',
+    cat: 'strength', pattern: 'pull', loadType: 'rpe',
+    cues: ['Slight backward lean, chest proud.', 'Pull the bar to the collarbone, elbows down and back.',
+      'Let the shoulder blades rise fully at the top for a real stretch.'],
+    why: 'Lets you train the lats to failure safely once weighted pull-ups get heavy. Full stretch at the top is the point.'
+  },
+  cable_row: {
+    name: 'Seated Cable Row',
+    cat: 'strength', pattern: 'pull', loadType: 'rpe',
+    cues: ['Chest up, no rocking from the hips.', 'Pull to the navel, squeeze for a beat.',
+      'Let the arms extend fully and the blades spread on the way out.'],
+    why: 'Constant tension through the whole range makes it a better mid-back builder than most barbell rows.'
+  },
+  pullover: {
+    name: 'Cable Pullover',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Hinge slightly, arms nearly straight.', 'Pull the handle down to the thighs using only the lats.',
+      'Full overhead stretch at the top.'],
+    why: 'Isolates the lat in a way no row does. Builds the width that makes a waist look small.'
+  },
+  rear_delt_fly: {
+    name: 'Rear Delt Fly',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Chest supported or hinged over, thumbs down.', 'Lead with the elbows, stop at shoulder level.',
+      'Light weight — this is a small muscle.'],
+    why: 'Rear delts balance out all the pressing, hold your shoulders back, and are half of what makes delts look round.'
+  },
+  shrug: {
+    name: 'DB Shrug',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Straight up, not rolling.', 'Hold the top for a full second.', 'Full stretch at the bottom.'],
+    why: 'Upper traps fill out the frame between neck and shoulders, and they take real load for a jumping athlete.'
+  },
+  preacher_curl: {
+    name: 'Preacher Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Upper arms flat on the pad.', 'Do not fully straighten at the bottom under heavy load.',
+      'Slow 3-second negative.'],
+    why: 'Biceps at short length with zero cheating. Pair with incline curls to cover both ends of the range.'
+  },
+  hammer_curl: {
+    name: 'Hammer Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Neutral grip throughout.', 'Elbows stay at your sides.', 'No swinging — control both directions.'],
+    why: 'Hits the brachialis, which sits under the biceps and pushes it up. This is the one that makes arms look thick.'
+  },
+  cable_curl: {
+    name: 'Cable Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Constant tension, no rest at the bottom.', 'Elbows fixed in place.', 'Squeeze at the top.'],
+    why: 'Cables keep load on the biceps through the whole range, which free weights lose at the top and bottom.'
+  },
+  cable_crunch: {
+    name: 'Cable Crunch',
+    cat: 'core', pattern: 'core', loadType: 'rpe',
+    cues: ['Kneel, rope behind the head, hips fixed.', 'Crunch by rounding the spine, not by hinging at the hips.',
+      'Squeeze hard at the bottom.'],
+    why: 'The only way to train abs with progressive load. Abs are muscles — grow them like any other.'
   }
 };
 
@@ -1303,15 +1517,26 @@ return { ex, EXERCISES };
 
 __def('program', function () {
 /**
- * "ABOVE THE NET" — a 16-week block-periodized program for a 6'3", 190 lb
- * volleyball player who wants to be lean, explosive, and hard to break.
+ * "FRAME" — a 24-week lean-mass program for a 6'3" volleyball player going
+ * from 190 lb to a lean 200 lb.
  *
- * Structure: 4 blocks x 4 weeks. Weeks 1-3 of each block load, week 4 unloads.
- * Week 16 is a test week — you re-run the whole battery and see the receipts.
+ * Why 24 weeks: a trained lifter adds roughly 0.3-0.5 lb of mostly-lean weight
+ * per week before the surplus starts turning into fat instead of muscle. Ten
+ * pounds at that rate is about six months. Anything faster is mostly water,
+ * glycogen and fat, and it would cost the jump we spent the last plan building.
  *
- * Prescription arrays are indexed by week-within-block (0..3). A scalar means
- * "same every week".
+ * Structure: 6 four-week blocks (3 loading weeks, 1 deload) grouped into three
+ * 8-week phases. Volume drives the first phase, load drives the second, and the
+ * third pushes both before a final taper and retest in week 24.
+ *
+ * A Wednesday jump session runs the whole way through at maintenance dose. It
+ * is not there to add inches — it is there so that carrying 10 extra pounds
+ * does not cost you the explosiveness you already have.
+ *
+ * Prescriptions resolve per week-in-block (0..3); see `atWeek`.
  */
+
+const { ex } = __req('exercises');
 
 /* Percent-of-max prescriptions reference these tested lifts. */
 const MAX_LIFTS = {
@@ -1323,15 +1548,22 @@ const MAX_LIFTS = {
 };
 
 const METRICS = {
-  bodyweight:   { name: 'Body Weight',      unit: 'lb', better: 'lower', target: 180 },
-  waist:        { name: 'Waist (navel)',    unit: 'in', better: 'lower', target: 31 },
-  reach:        { name: 'Standing Reach',   unit: 'in', better: 'flat' },
-  approach:     { name: 'Approach Jump',    unit: 'in', better: 'higher', note: 'Touch height minus standing reach' },
-  block:        { name: 'Block Jump',       unit: 'in', better: 'higher' },
-  broad:        { name: 'Broad Jump',       unit: 'in', better: 'higher' },
-  agility:      { name: '5-10-5 Agility',   unit: 's',  better: 'lower' },
-  pullups:      { name: 'Max Pull-Ups',     unit: 'reps', better: 'higher' },
-  ankle:        { name: 'Ankle (knee-to-wall)', unit: 'cm', better: 'higher', target: 10 }
+  bodyweight: { name: 'Body Weight',    unit: 'lb', better: 'higher', target: 202,
+                note: 'Weigh in the same way every time: morning, after the bathroom, before food. Watch the weekly average, never a single day.' },
+  waist:      { name: 'Waist (navel)',  unit: 'in', better: 'flat', target: 32,
+                note: 'The single most important number on a gaining phase. If this climbs faster than your arms and chest, the surplus is too big.' },
+  chest:      { name: 'Chest',          unit: 'in', better: 'higher' },
+  arm:        { name: 'Arm (flexed)',   unit: 'in', better: 'higher' },
+  thigh:      { name: 'Thigh',          unit: 'in', better: 'higher' },
+  reach:      { name: 'Standing Reach', unit: 'in', better: 'flat' },
+  approach:   { name: 'Approach Jump',  unit: 'in', better: 'higher',
+                note: 'Touch height minus standing reach. Holding this steady while you add 10 lb is a win; gaining is a bonus.' },
+  block:      { name: 'Block Jump',     unit: 'in', better: 'higher' },
+  broad:      { name: 'Broad Jump',     unit: 'in', better: 'higher' },
+  agility:    { name: '5-10-5 Agility', unit: 's',  better: 'lower' },
+  pullups:    { name: 'Max Pull-Ups',   unit: 'reps', better: 'higher',
+                note: 'Expect this to dip slightly as you gain weight. If it holds, the weight you added is muscle.' },
+  ankle:      { name: 'Ankle (knee-to-wall)', unit: 'cm', better: 'higher', target: 10 }
 };
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -1340,8 +1572,8 @@ const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const S = (name, notes, items) => ({ name, notes, items });
 const i = (exId, o = {}) => ({ ex: exId, ...o });
 
-/* Reusable blocks --------------------------------------------------------- */
-const PREP_LOWER = S('Movement Prep', '8 minutes. Do not skip this — it is where your ankles and hips get permission to work.', [
+/* ------------------------------------------------------- shared sections */
+const PREP_LOWER = S('Movement Prep', '8 minutes. Cheap, and it is what lets you load deep ranges safely.', [
   i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
   i('ankle_rock', { sets: 2, reps: '8 ea side' }),
   i('hip_90_90', { sets: 1, reps: '10 switches' }),
@@ -1349,641 +1581,665 @@ const PREP_LOWER = S('Movement Prep', '8 minutes. Do not skip this — it is whe
   i('pogo_prep', { sets: 2, reps: '15 contacts' })
 ]);
 
-const PREP_UPPER = S('Movement Prep', '8 minutes. Shoulder prep is the price of admission for a hitter.', [
+const PREP_UPPER = S('Movement Prep', '6 minutes. Shoulder prep is the price of admission for a hitter.', [
   i('cat_cow', { sets: 1, reps: '8 + 5 ea side' }),
   i('scap_pushup', { sets: 2, reps: '10' }),
   i('band_pullapart', { sets: 2, reps: '15' }),
   i('wall_slide', { sets: 2, reps: '10' })
 ]);
 
-const PREP_SPEED = S('Movement Prep', 'Longer prep — you are about to sprint and cut. Cold tissue tears.', [
+const PREP_JUMP = S('Movement Prep', 'Be genuinely warm before you jump. 10 minutes minimum.', [
   i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
-  i('adductor_rock', { sets: 1, reps: '8 ea side' }),
   i('world_greatest', { sets: 1, reps: '5 ea side' }),
-  i('a_skip', { sets: 3, reps: '20 m' }),
-  i('pogo_prep', { sets: 2, reps: '20 contacts' })
+  i('ankle_rock', { sets: 2, reps: '8 ea side' }),
+  i('adductor_rock', { sets: 1, reps: '8 ea side' }),
+  i('pogo_prep', { sets: 2, reps: '20 contacts' }),
+  i('snap_down', { sets: 2, reps: '5' })
 ]);
 
-const ARMOR_SHOULDER = S('Shoulder Armor', '5 minutes, every upper day, forever. This is what keeps you swinging at 40.', [
+const ARMOR_SHOULDER = S('Shoulder Armor', '5 minutes, every upper day. This is what keeps you swinging at 40.', [
   i('facepull', { sets: 3, reps: '15', rpe: 6, rest: 45 }),
-  i('ext_rotation', { sets: 3, reps: '12 ea', rpe: 6, rest: 45, note: 'Light. 3 seconds on the way down.' }),
+  i('ext_rotation', { sets: 2, reps: '12 ea', rpe: 6, rest: 45, note: 'Light. 3 seconds on the way down.' }),
   i('prone_ytw', { sets: 2, reps: '5 of each letter', rpe: 6, rest: 45 })
-]);
-
-const ARMOR_LOWER = S('Durability Block', 'Tendon and connective-tissue work. Slow, boring, and the reason you stay on the court.', [
-  i('calf_raise', { sets: 3, reps: '12', tempo: '3-1-1', rpe: 7, rest: 60 }),
-  i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
-  i('copenhagen', { sets: 2, reps: '20 s ea side', rest: 45 })
 ]);
 
 const NECK = i('neck_iso', { sets: 1, reps: '10 s x 4 directions' });
 
 /* ========================================================================
-   BLOCK 1 — FOUNDATION (Weeks 1-4)
+   LOADING SCHEMES — one per block, resolved by role.
    ===================================================================== */
-const B1_A = {
-  id: 'b1a', day: 0, name: 'Lower Base + Push',
-  focus: 'Tempo squats and landing mechanics. Build the chassis before you race it.',
-  brief: 'Everything is slower than you want it to be this block. That is deliberate — tempo work builds the tendon and connective-tissue tolerance that lets you survive the plyometrics in weeks 9-16.',
-  sections: [
-    PREP_LOWER,
-    S('Jump Skill', 'Low volume, high quality. You are learning to land, not testing your vertical.', [
-      i('snap_down', { sets: 3, reps: '5', rest: 60, note: 'Freeze the landing for a full 2 seconds.' }),
-      i('box_jump', { sets: 4, reps: '3', rest: 75, note: 'Step down every single rep.' })
-    ]),
-    S('Main Strength', 'The tempo is the prescription. 3 seconds down, 1 second pause, drive up.', [
-      i('back_squat', { sets: [3, 4, 4, 3], reps: '8', pct: [0.60, 0.65, 0.70, 0.60], tempo: '3-1-1', rest: 150 })
-    ]),
-    S('Push', null, [
-      i('db_incline', { sets: [3, 3, 4, 2], reps: '10', rpe: [7, 7.5, 8, 6], rest: 90 }),
-      i('pushup_weighted', { sets: 3, reps: '10', rpe: 7, rest: 75 })
-    ]),
-    S('Accessory', 'Shoulders wide, waist tight. This is the "shredded" part.', [
-      i('lat_raise', { sets: 3, reps: '15', rpe: 8, rest: 45 }),
-      i('triceps_ext', { sets: 3, reps: '12', rpe: 8, rest: 45 })
-    ]),
-    S('Durability Block', null, [
-      i('calf_raise', { sets: 3, reps: '12', tempo: '3-1-1', rpe: 7, rest: 60 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
-      NECK
-    ])
-  ]
+const SCHEMES = {
+  1: {
+    label: 'Technique and volume tolerance',
+    primary:   { sets: [3, 4, 4, 2], reps: '8-10',  rpe: [7, 7.5, 8, 6],     rest: 180 },
+    secondary: { sets: [3, 3, 4, 2], reps: '10-12', rpe: [7, 8, 8, 6],       rest: 120 },
+    accessory: { sets: [2, 3, 3, 2], reps: '12',    rpe: [8, 8, 8.5, 6],     rest: 90 },
+    isolation: { sets: [2, 3, 3, 2], reps: '12-15', rpe: [8, 9, 9, 7],       rest: 60 },
+    calf:      { sets: [3, 4, 4, 2], reps: '12-15', rpe: [8, 8.5, 9, 7],     rest: 60 },
+    core:      { sets: [2, 3, 3, 2], reps: '12',    rpe: [8, 8, 8.5, 6],     rest: 60 },
+    plyo:      { sets: [2, 3, 3, 2], reps: '3',                              rest: 90 }
+  },
+  2: {
+    label: 'Peak volume — the most sets you will do',
+    primary:   { sets: [4, 4, 5, 2], reps: '8-10',  rpe: [8, 8, 8.5, 6],     rest: 180 },
+    secondary: { sets: [4, 4, 4, 2], reps: '10-12', rpe: [8, 8.5, 9, 6],     rest: 120 },
+    accessory: { sets: [3, 3, 4, 2], reps: '12-15', rpe: [8.5, 9, 9, 6],     rest: 75 },
+    isolation: { sets: [3, 3, 4, 2], reps: '15',    rpe: [9, 9, 9.5, 7],     rest: 50 },
+    calf:      { sets: [4, 4, 5, 2], reps: '12-15', rpe: [8.5, 9, 9, 7],     rest: 60 },
+    core:      { sets: [3, 3, 4, 2], reps: '12-15', rpe: [8.5, 9, 9, 6],     rest: 55 },
+    plyo:      { sets: [2, 3, 3, 2], reps: '3',                              rest: 90 }
+  },
+  3: {
+    label: 'Heavier — strength drives the next growth phase',
+    primary:   { sets: [4, 4, 5, 2], reps: [5, 5, 4, 5], pct: [0.78, 0.82, 0.86, 0.70], rpe: [8, 8.5, 9, 6], rest: 210 },
+    secondary: { sets: [3, 4, 4, 2], reps: '8',     rpe: [8, 8.5, 9, 6],     rest: 150 },
+    accessory: { sets: [3, 3, 3, 2], reps: '10-12', rpe: [8, 8.5, 9, 6],     rest: 90 },
+    isolation: { sets: [3, 3, 3, 2], reps: '12-15', rpe: [8.5, 9, 9, 7],     rest: 60 },
+    calf:      { sets: [3, 4, 4, 2], reps: '10-12', rpe: [8.5, 9, 9, 7],     rest: 75 },
+    core:      { sets: [3, 3, 3, 2], reps: '12',    rpe: [8, 8.5, 9, 6],     rest: 60 },
+    plyo:      { sets: [3, 3, 3, 2], reps: '3',                              rest: 100 }
+  },
+  4: {
+    label: 'Volume again, at the loads you just built',
+    primary:   { sets: [4, 4, 5, 2], reps: '6-8',   pct: [0.72, 0.76, 0.80, 0.65], rpe: [8, 8.5, 9, 6], rest: 195 },
+    secondary: { sets: [4, 4, 4, 2], reps: '10',    rpe: [8, 8.5, 9, 6],     rest: 135 },
+    accessory: { sets: [3, 4, 4, 2], reps: '12',    rpe: [8.5, 9, 9, 6],     rest: 80 },
+    isolation: { sets: [3, 3, 4, 2], reps: '15',    rpe: [9, 9, 9.5, 7],     rest: 55 },
+    calf:      { sets: [4, 4, 5, 2], reps: '12-15', rpe: [9, 9, 9.5, 7],     rest: 60 },
+    core:      { sets: [3, 3, 4, 2], reps: '12-15', rpe: [8.5, 9, 9, 6],     rest: 55 },
+    plyo:      { sets: [2, 3, 3, 2], reps: '3',                              rest: 90 }
+  },
+  5: {
+    label: 'Dense — shorter rests, harder finishes',
+    primary:   { sets: [4, 5, 5, 2], reps: '6-8',   pct: [0.75, 0.79, 0.83, 0.68], rpe: [8.5, 9, 9, 6], rest: 195 },
+    secondary: { sets: [4, 4, 5, 2], reps: '8-10',  rpe: [8.5, 9, 9, 6],     rest: 120 },
+    accessory: { sets: [3, 4, 4, 2], reps: '12-15', rpe: [9, 9, 9.5, 6],     rest: 60 },
+    isolation: { sets: [3, 4, 4, 2], reps: '15-20', rpe: [9, 9.5, 10, 7],    rest: 45 },
+    calf:      { sets: [4, 4, 5, 2], reps: '15',    rpe: [9, 9.5, 10, 7],    rest: 50 },
+    core:      { sets: [3, 4, 4, 2], reps: '15',    rpe: [9, 9, 9.5, 6],     rest: 50 },
+    plyo:      { sets: [2, 3, 3, 2], reps: '3',                              rest: 90 }
+  },
+  6: {
+    label: 'Consolidate — prove the new mass is strong, then taper',
+    primary:   { sets: [4, 4, 3, 2], reps: [4, 4, 3, 5], pct: [0.85, 0.88, 0.90, 0.70], rpe: [9, 9, 9, 6], rest: 240 },
+    secondary: { sets: [3, 4, 3, 2], reps: '6-8',   rpe: [8.5, 9, 8.5, 6],   rest: 150 },
+    accessory: { sets: [3, 3, 3, 2], reps: '10-12', rpe: [8.5, 9, 8.5, 6],   rest: 90 },
+    isolation: { sets: [2, 3, 2, 2], reps: '12-15', rpe: [8.5, 9, 8.5, 7],   rest: 60 },
+    calf:      { sets: [3, 4, 3, 2], reps: '12',    rpe: [9, 9, 9, 7],       rest: 70 },
+    core:      { sets: [2, 3, 2, 2], reps: '12',    rpe: [8, 8.5, 8, 6],     rest: 60 },
+    plyo:      { sets: [3, 3, 2, 2], reps: '2-3',                            rest: 110 }
+  }
 };
 
-const B1_B = {
-  id: 'b1b', day: 1, name: 'Pull + Shoulder Armor',
-  focus: 'Back volume and the rotator-cuff work that keeps your swing alive.',
-  brief: 'Volleyball is an overhead sport with no natural counterbalance. This session is the counterbalance. Do the armor work with light weight and real attention.',
-  sections: [
-    PREP_UPPER,
-    S('Main Pull', null, [
-      i('pullup', { sets: [4, 4, 4, 3], reps: 'AMRAP -1', rpe: 8, rest: 120, note: 'Leave one rep in the tank on every set. Add load once you clear 10.' }),
-      i('bb_row', { sets: [3, 4, 4, 2], reps: '8', rpe: [7, 8, 8, 6], rest: 120 })
-    ]),
-    S('Volume Pull', null, [
-      i('chest_supported_row', { sets: 3, reps: '12', rpe: 8, rest: 75 }),
-      i('curl', { sets: 3, reps: '12', rpe: 8, rest: 45 })
-    ]),
-    ARMOR_SHOULDER,
-    S('Core', 'Braced, not crunched. Every rep should feel like you could take a punch.', [
-      i('hollow_hold', { sets: 3, reps: '30 s', rest: 45 }),
-      i('pallof', { sets: 3, reps: '10 ea side', rpe: 7, rest: 45 }),
-      i('side_plank', { sets: 2, reps: '8 reach-throughs ea', rest: 45 })
-    ]),
-    S('Carry', null, [
-      i('bottoms_up_carry', { sets: 3, reps: '20 m ea arm', rpe: 8, rest: 60 })
-    ])
-  ]
-};
+/**
+ * Resolve one template item against a block's scheme.
+ * Percentage loading is only applied when the movement actually references a
+ * tested max; everything else falls back to autoregulated RPE.
+ */
+function resolve(item, scheme) {
+  const role = item.role;
+  if (!role) return { ...item };
+  const r = scheme[role];
+  if (!r) throw new Error(`Unknown role "${role}" for ${item.ex}`);
 
-const B1_C = {
-  id: 'b1c', day: 2, name: 'Court Speed + Aerobic Base',
-  focus: 'Sprint mechanics, footwork, and an aerobic engine that does not cost you your legs.',
-  brief: 'If you played volleyball yesterday and your legs are cooked, cut the sprints in half and keep the Zone 2. The aerobic base is what makes you recover between points in the third set.',
-  sections: [
-    PREP_SPEED,
-    S('Sprint Mechanics', 'Quality only. Full recovery. If your times drop off, you are done.', [
-      i('wall_drill', { sets: 3, reps: '10 ea leg', rest: 45 }),
-      i('sprint_accel', { sets: [5, 6, 6, 4], reps: '15 m', rest: 90 })
-    ]),
-    S('Court Movement', 'Volleyball-specific footwork. No ball needed.', [
-      i('lateral_shuffle', { sets: 4, reps: '2 x 5 m + cut', rest: 60 }),
-      i('approach_footwork', { sets: 4, reps: '5 approaches', rest: 60, note: 'Slow it down first, then build speed. Fix the footwork now while it is cheap.' })
-    ]),
-    S('Conditioning', 'Pick one. Tempo runs if your legs feel good, Zone 2 if they do not.', [
-      i('tempo_run', { sets: [8, 10, 12, 6], reps: '100 m @ 70%', rest: 60, note: 'Walk back as your rest.' }),
-      i('zone2', { sets: 1, reps: '25 min', note: 'Alternative to tempo runs. Bike or row — keep it non-impact.' })
-    ]),
-    S('Durability Block', null, [
-      i('copenhagen', { sets: 3, reps: '20 s ea side', rest: 45 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
-      i('seated_calf', { sets: 3, reps: '15', tempo: '3-1-1', rpe: 7, rest: 60 })
-    ])
-  ]
-};
+  const out = { ex: item.ex, sets: r.sets, reps: r.reps, rest: r.rest };
+  const usesPct = r.pct && !!ex(item.ex).ref;
+  if (usesPct) out.pct = r.pct;
+  else if (r.rpe) out.rpe = r.rpe;
 
-const B1_D = {
-  id: 'b1d', day: 3, name: 'Posterior Chain + Single Leg',
-  focus: 'Hamstrings, glutes, and closing the gap between your left and right leg.',
-  brief: 'Nordics are the most important thing in this session and probably in this program. Hamstring strains end seasons. Log the depth you can control and chase it.',
-  sections: [
-    S('Movement Prep', null, [
-      i('hip_90_90', { sets: 1, reps: '10 switches' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('bird_dog', { sets: 2, reps: '6 ea side' }),
-      i('adductor_rock', { sets: 1, reps: '8 ea side' })
-    ]),
-    S('Main Hinge', 'Controlled down, aggressive up.', [
-      i('trap_dl', { sets: [3, 4, 4, 3], reps: '6', pct: [0.62, 0.68, 0.73, 0.60], tempo: '3-0-1', rest: 150 })
-    ]),
-    S('Hinge Volume', null, [
-      i('rdl', { sets: 3, reps: '10', rpe: [7, 7.5, 8, 6], rest: 105, note: 'Stop when the hamstrings run out of length — not when your back rounds.' }),
-      i('nordic', { sets: 3, reps: '5', rest: 90, note: 'Lower as slowly as you can control. Log how far down you get.' })
-    ]),
-    S('Single Leg', 'The side that feels harder gets one extra set. Every time.', [
-      i('bulgarian', { sets: 3, reps: '10 ea', tempo: '3-0-1', rpe: 8, rest: 90 }),
-      i('leg_curl', { sets: 3, reps: '12', tempo: '3-1-1', rpe: 8, rest: 60 })
-    ]),
-    S('Durability Block', null, [
-      i('seated_calf', { sets: 4, reps: '12', tempo: '3-1-1', rpe: 8, rest: 60 }),
-      i('atg_split', { sets: 2, reps: '8 ea', rpe: 6, rest: 60, note: 'Bodyweight or light. Building knee tolerance in deep flexion.' })
-    ]),
-    S('Core', null, [
-      i('ab_wheel', { sets: 3, reps: '8', rest: 60 }),
-      i('suitcase_carry', { sets: 3, reps: '30 m ea', rpe: 8, rest: 60 })
-    ])
-  ]
-};
+  // Template overrides always win.
+  for (const [k, v] of Object.entries(item)) {
+    if (k === 'role' || k === 'ex') continue;
+    out[k] = v;
+  }
+  if (out.pct && out.rpe) delete out.rpe;
+  return out;
+}
 
-const B1_E = {
-  id: 'b1e', day: 5, name: 'Full Body Power + Finisher',
-  focus: 'Triple extension, horizontal power, and a metabolic kicker.',
-  brief: 'First real taste of power work. Med ball and broad jumps are 100% intent or they are worthless — do not turn them into conditioning.',
-  sections: [
-    S('Movement Prep', null, [
-      i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
-      i('world_greatest', { sets: 1, reps: '5 ea side' }),
-      i('scap_pushup', { sets: 2, reps: '10' }),
-      i('pogo_prep', { sets: 2, reps: '20 contacts' })
-    ]),
-    S('Power', 'Every rep at full effort. Long rests. This is a nervous-system session.', [
-      i('med_scoop_toss', { sets: 4, reps: '5', rest: 75, note: 'Toss it as high as you can and let it land.' }),
-      i('broad_jump', { sets: [3, 4, 4, 2], reps: '3', rest: 90, note: 'Mark your best distance and try to beat it.' })
-    ]),
-    S('Strength', null, [
-      i('front_squat', { sets: 3, reps: '8', pct: [0.50, 0.55, 0.58, 0.48], tempo: '2-1-1', rest: 120, note: 'Percentages are off your BACK squat max — front squat runs about 85% of it.' }),
-      i('ohp', { sets: [3, 4, 4, 2], reps: '8', pct: [0.62, 0.66, 0.70, 0.58], rest: 120 })
-    ]),
-    S('Upper Volume', null, [
-      i('db_row', { sets: 3, reps: '10 ea', rpe: 8, rest: 75 }),
-      i('dip', { sets: 3, reps: '10', rpe: 8, rest: 75 })
-    ]),
-    S('Finisher', '8 minutes of hell. Keep every rep fast — this is power endurance, not a grind.', [
-      i('sled_push', { sets: [6, 8, 8, 5], reps: '10 s all-out', rest: 60, note: 'Sled, bike, or hill. Full recovery between — quality every rep.' })
-    ]),
-    S('Durability Block', null, [
-      i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
-      NECK
-    ])
-  ]
-};
+function buildSession(tpl, scheme) {
+  return {
+    ...tpl,
+    sections: tpl.sections.map(sec => ({
+      name: sec.name,
+      notes: sec.notes,
+      items: sec.items.map(it => resolve(it, scheme))
+    }))
+  };
+}
 
 /* ========================================================================
-   BLOCK 2 — STRENGTH (Weeks 5-8)
+   PHASE 1 — weeks 1-8 · Build the base
    ===================================================================== */
-const B2_A = {
-  id: 'b2a', day: 0, name: 'Heavy Lower + Push',
-  focus: 'Real weight on the bar. Force production is the foundation of a vertical.',
-  brief: 'The tempo work is gone and the load is up. You cannot jump higher than you can push into the floor — this block builds the push. Depth drops appear this week: step off, land silently, freeze.',
-  sections: [
-    PREP_LOWER,
-    S('Plyometrics', 'Landing quality is the whole point of the depth drops. Silent or it does not count.', [
-      i('pogo', { sets: 3, reps: '12 contacts', rest: 60 }),
-      i('depth_drop', { sets: [3, 3, 4, 2], reps: '4', rest: 90, note: 'Box at 18-24". Step OFF, do not jump off. Freeze the landing 2 s.' }),
-      i('box_jump', { sets: 4, reps: '3', rest: 75 })
-    ]),
-    S('Main Strength', null, [
-      i('back_squat', { sets: [5, 5, 5, 3], reps: [4, 4, 3, 4], pct: [0.78, 0.82, 0.86, 0.70], rest: 210 })
-    ]),
-    S('Push', null, [
-      i('bench', { sets: [4, 4, 5, 3], reps: [5, 5, 4, 5], pct: [0.75, 0.80, 0.85, 0.70], rest: 180 }),
-      i('db_incline', { sets: 3, reps: '8', rpe: 8, rest: 90 })
-    ]),
-    S('Accessory', null, [
-      i('lat_raise', { sets: 3, reps: '15', rpe: 8, rest: 45 }),
-      i('triceps_ext', { sets: 3, reps: '12', rpe: 8, rest: 45 })
-    ]),
-    S('Durability Block', null, [
-      i('calf_raise', { sets: 4, reps: '8', tempo: '2-2-1', rpe: 8, rest: 75, note: 'Heavier than block 1. Hold 2 s at the top.' }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
-      NECK
-    ])
-  ]
-};
-
-const B2_B = {
-  id: 'b2b', day: 1, name: 'Heavy Pull + Shoulder Armor',
-  focus: 'Loaded pull-ups and rows. Armor work unchanged.',
-  brief: 'Add weight to your pull-ups this block. A weighted pull-up is one of the best indicators of an athlete who is both strong and lean.',
-  sections: [
-    PREP_UPPER,
-    S('Main Pull', null, [
-      i('pullup', { sets: 5, reps: '5', rpe: 8, rest: 150, note: 'Add load with a belt or vest. If 5x5 bodyweight is easy, you need weight.' }),
-      i('bb_row', { sets: [4, 4, 4, 2], reps: '6', rpe: [8, 8.5, 9, 6], rest: 150 })
-    ]),
-    S('Volume Pull', null, [
-      i('chest_supported_row', { sets: 3, reps: '10', rpe: 8, rest: 75 }),
-      i('curl', { sets: 3, reps: '10', rpe: 8, rest: 45 })
-    ]),
-    ARMOR_SHOULDER,
-    S('Core', null, [
-      i('hanging_leg_raise', { sets: 3, reps: '10', rest: 60 }),
-      i('pallof', { sets: 3, reps: '10 ea side', rpe: 8, rest: 45 }),
-      i('copenhagen', { sets: 3, reps: '25 s ea side', rest: 45 })
-    ]),
-    S('Carry', null, [
-      i('farmer_carry', { sets: 3, reps: '40 m', rpe: 8, rest: 75 })
-    ])
-  ]
-};
-
-const B2_C = {
-  id: 'b2c', day: 2, name: 'Speed + Change of Direction',
-  focus: 'Acceleration and hard cutting. Timed, tracked, competitive.',
-  brief: 'Time your 5-10-5 today and log it. A number you can see moving is worth more than any amount of "feeling faster".',
-  sections: [
-    PREP_SPEED,
-    S('Acceleration', 'Full recovery. Every rep is a max effort or it is junk mileage.', [
-      i('sprint_accel', { sets: [6, 8, 8, 5], reps: '20 m', rest: 120 })
-    ]),
-    S('Change of Direction', null, [
-      i('pro_agility', { sets: 4, reps: '1 timed run', rest: 150, note: 'Two runs each direction. Log your best time in the Progress tab.' }),
-      i('crossover_step', { sets: 4, reps: '3 ea side', rest: 60 }),
-      i('reactive_shuffle', { sets: 6, reps: '6 s', rest: 75, note: 'Need a partner or a random cue. React, do not anticipate.' })
-    ]),
-    S('Conditioning', 'Repeat-sprint ability in the exact pattern volleyball asks for.', [
-      i('shuttle_condition', { sets: [6, 8, 8, 4], reps: '1 down-and-back x3', rest: 60 })
-    ]),
-    S('Durability Block', null, [
-      i('copenhagen', { sets: 3, reps: '25 s ea side', rest: 45 }),
-      i('seated_calf', { sets: 3, reps: '15', tempo: '3-1-1', rpe: 8, rest: 60 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 })
-    ])
-  ]
-};
-
-const B2_D = {
-  id: 'b2d', day: 3, name: 'Heavy Hinge + Single Leg',
-  focus: 'Trap bar deadlift at real weight. Hamstrings hammered.',
-  brief: 'Heaviest pulling of the program. Brace hard, keep the lats tight, and stop the set the moment your back position changes.',
-  sections: [
-    S('Movement Prep', null, [
-      i('hip_90_90', { sets: 1, reps: '10 switches' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('bird_dog', { sets: 2, reps: '6 ea side' }),
-      i('med_scoop_toss', { sets: 2, reps: '5', note: 'Primer — wakes up the hinge before you load it.' })
-    ]),
-    S('Main Hinge', null, [
-      i('trap_dl', { sets: [5, 5, 5, 3], reps: [4, 4, 3, 4], pct: [0.80, 0.84, 0.88, 0.72], rest: 210 })
-    ]),
-    S('Hip Extension', null, [
-      i('hip_thrust', { sets: 3, reps: '8', rpe: 8, rest: 105, note: '1 s hard squeeze at the top of every rep.' }),
-      i('nordic', { sets: 4, reps: '5', rest: 90, note: 'Chase the depth. This is the anti-hamstring-strain drug.' })
-    ]),
-    S('Single Leg', null, [
-      i('step_up', { sets: 3, reps: '8 ea', rpe: 8, rest: 90, note: 'Knee-height box. Zero push off the back foot.' }),
-      i('atg_split', { sets: 3, reps: '8 ea', rpe: 7, rest: 75 })
-    ]),
-    S('Durability Block', null, [
-      i('seated_calf', { sets: 4, reps: '10', tempo: '2-2-1', rpe: 8, rest: 75 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 })
-    ]),
-    S('Core', null, [
-      i('ab_wheel', { sets: 3, reps: '10', rest: 60 }),
-      i('side_plank', { sets: 2, reps: '10 reach-throughs ea', rest: 45 })
-    ])
-  ]
-};
-
-const B2_E = {
-  id: 'b2e', day: 5, name: 'Explosive Full Body',
-  focus: 'Olympic derivatives and loaded jumps. Speed against resistance.',
-  brief: 'Hang power clean if you know it, trap bar jump shrug if you do not — both build the same triple extension. Bar speed is the prescription: if it slows down, the set is over regardless of reps left.',
-  sections: [
-    S('Movement Prep', null, [
-      i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
-      i('world_greatest', { sets: 1, reps: '5 ea side' }),
-      i('scap_pushup', { sets: 2, reps: '10' }),
-      i('pogo_prep', { sets: 2, reps: '20 contacts' })
-    ]),
-    S('Olympic Derivative', 'Pick ONE. Speed over load, always.', [
-      i('hang_clean', { sets: 5, reps: '3', pct: [0.70, 0.75, 0.80, 0.65], rest: 150 }),
-      i('jump_shrug', { sets: 5, reps: '3', pct: [0.35, 0.38, 0.40, 0.30], rest: 150, note: 'Substitute for the hang clean if you have not been coached on the catch.' })
-    ]),
-    S('Loaded Jumps', null, [
-      i('trap_jump', { sets: 4, reps: '3', pct: [0.22, 0.25, 0.28, 0.20], rest: 120, note: 'Reset on the floor between reps. If the bar barely leaves the ground, drop weight.' }),
-      i('med_rot_throw', { sets: 4, reps: '4 ea side', rest: 75 })
-    ]),
-    S('Strength', null, [
-      i('ohp', { sets: [4, 4, 4, 2], reps: '5', pct: [0.75, 0.80, 0.85, 0.70], rest: 150 }),
-      i('db_row', { sets: 4, reps: '8 ea', rpe: 8, rest: 90 }),
-      i('chinup', { sets: 3, reps: '8', rpe: 8, rest: 90 })
-    ]),
-    S('Finisher', null, [
-      i('sled_push', { sets: [8, 8, 10, 5], reps: '10 s all-out', rest: 60 })
-    ]),
-    S('Durability Block', null, [
-      i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
-      NECK
-    ])
-  ]
-};
+const P1 = [
+  {
+    id: 'p1-lowerA', day: 0, name: 'Lower — Squat Focus',
+    focus: 'Squat, leg press, and enough quad volume to actually change the shape of your legs.',
+    brief: 'Legs respond to volume more than almost anything else, and yours have the most room to grow. Full range on everything — depth is where the growth is, and the leg press exists so you can chase it without your lower back becoming the limit.',
+    sections: [
+      PREP_LOWER,
+      S('Spring Maintenance', 'Two minutes. Keeps your ankles springy while the rest of the week gets heavy.', [
+        i('pogo', { role: 'plyo', reps: '12 contacts' }),
+        i('box_jump', { role: 'plyo', note: 'Step down every rep. This is upkeep, not a workout.' })
+      ]),
+      S('Main Lift', null, [
+        i('back_squat', { role: 'primary', note: 'Two reps in reserve on every set this block. Learn the groove before you chase load.' })
+      ]),
+      S('Volume', null, [
+        i('leg_press', { role: 'secondary', note: 'Deep, controlled, no bouncing out of the bottom.' }),
+        i('bulgarian', { role: 'accessory', reps: '10-12 ea', note: 'The side that feels harder gets one extra set.' })
+      ]),
+      S('Isolation', null, [
+        i('leg_ext', { role: 'isolation', note: 'Squeeze the top for a beat. Last set, take it to failure.' })
+      ]),
+      S('Calves', 'Grown with slow reps and full stretch, never bouncing.', [
+        i('calf_raise', { role: 'calf', tempo: '3-1-1' })
+      ]),
+      S('Core', null, [
+        i('hanging_leg_raise', { role: 'core' })
+      ]),
+      S('Durability Block', null, [
+        i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '25 s ea side', rest: 45 }),
+        NECK
+      ])
+    ]
+  },
+  {
+    id: 'p1-upperA', day: 1, name: 'Upper — Push Focus',
+    focus: 'Incline pressing, dumbbells, and side delts. The width half of looking bigger.',
+    brief: 'Broad shoulders read as size far more than a big chest does, so side delts get trained hard every push day. Press with your shoulder blades set, and stop lowering when you feel a stretch rather than when the bar hits you.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('incline_bb_press', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('db_flat_press', { role: 'secondary' }),
+        i('db_ohp', { role: 'accessory' })
+      ]),
+      S('Isolation', null, [
+        i('lat_raise', { role: 'isolation', note: 'Lead with the elbow. Go lighter than your ego wants.' }),
+        i('cable_fly', { role: 'isolation' }),
+        i('pushdown', { role: 'isolation' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p1-jump', day: 2, name: 'Jump & Move',
+    focus: 'Keeping your vertical and your court speed while the scale goes up.',
+    brief: 'Short session, and the most important one for making sure you gain the right kind of weight. Ten extra pounds of muscle should make you jump higher; ten pounds of anything else will make you slower. This day is how you tell the difference — and it stays in the plan all 24 weeks.',
+    sections: [
+      PREP_JUMP,
+      S('Max Jumps', 'Fresh and maximal. Stop the moment height drops off.', [
+        i('approach_jump', { role: 'plyo', sets: [4, 4, 5, 3], reps: '2', rest: 120, note: 'Full game approach against a real target. Log your best in Progress.' }),
+        i('broad_jump', { role: 'plyo', rest: 100 })
+      ]),
+      S('Power', null, [
+        i('med_scoop_toss', { sets: 3, reps: '5', rest: 75 }),
+        i('med_rot_throw', { sets: 3, reps: '4 ea side', rest: 75 })
+      ]),
+      S('Court Movement', null, [
+        i('approach_footwork', { sets: 3, reps: '5 approaches', rest: 60 }),
+        i('lateral_shuffle', { sets: 3, reps: '2 x 5 m + cut', rest: 60 })
+      ]),
+      S('Aerobic', 'Deliberately short — on a gaining phase, cardio you do not need is just calories you have to eat back.', [
+        i('zone2', { sets: 1, reps: '15-20 min', note: 'Bike or row. Easy enough to hold a conversation.' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 2, reps: '5', rest: 75, note: 'Never skip these. Hamstring strains end seasons.' }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '25 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p1-lowerB', day: 3, name: 'Lower — Hinge Focus',
+    focus: 'Hamstrings and glutes, loaded both long and short.',
+    brief: 'Hamstrings have two jobs — extending the hip and bending the knee — and you need to train both. RDLs cover the first, leg curls the second. This is also the session that keeps you off the injury list, so Nordics are non-negotiable.',
+    sections: [
+      S('Movement Prep', null, [
+        i('hip_90_90', { sets: 1, reps: '10 switches' }),
+        i('ankle_rock', { sets: 2, reps: '8 ea side' }),
+        i('bird_dog', { sets: 2, reps: '6 ea side' }),
+        i('adductor_rock', { sets: 1, reps: '8 ea side' })
+      ]),
+      S('Main Lift', null, [
+        i('rdl', { role: 'primary', note: 'Stop when the hamstrings run out of length, not when your back rounds.' })
+      ]),
+      S('Volume', null, [
+        i('hip_thrust', { role: 'secondary', note: 'One second of hard glute squeeze at the top of every rep.' }),
+        i('seated_leg_curl', { role: 'accessory', note: 'The best hamstring size builder there is. Slow negatives.' })
+      ]),
+      S('Isolation', null, [
+        i('back_ext', { role: 'isolation', note: 'Hug a plate once bodyweight is easy.' })
+      ]),
+      S('Calves', null, [
+        i('seated_calf', { role: 'calf', tempo: '3-1-1', note: 'Bent knee biases the soleus, which is most of your calf.' })
+      ]),
+      S('Core', null, [
+        i('ab_wheel', { role: 'core', reps: '10' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 3, reps: '5', rest: 90 }),
+        i('copenhagen', { sets: 2, reps: '25 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p1-upperB', day: 4, name: 'Upper — Pull Focus',
+    focus: 'Lats, mid-back, rear delts and arms.',
+    brief: 'A wide back is what makes a 200 lb frame look athletic instead of just heavy. Pull with your elbows rather than your hands, and let your shoulder blades move fully at the top of every rep — the stretch matters as much as the squeeze.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('pullup', { role: 'primary', reps: 'AMRAP -2', note: 'Add load with a belt once you clear 10 clean reps.' })
+      ]),
+      S('Volume', null, [
+        i('chest_supported_row', { role: 'secondary', note: 'Chest stays on the pad. No cheating with the low back.' }),
+        i('lat_pulldown', { role: 'accessory', note: 'Full stretch overhead at the top of every rep.' })
+      ]),
+      S('Isolation', null, [
+        i('rear_delt_fly', { role: 'isolation' }),
+        i('curl', { role: 'isolation', note: 'Arms behind the body — full biceps stretch.' }),
+        i('hammer_curl', { role: 'isolation' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p1-pump', day: 5, name: 'Pump & Patch',
+    focus: 'Arms, delts, calves, core. High reps, low cost.',
+    brief: 'The session to drop first if life gets busy or the court took a lot out of you — nothing here is load-bearing for the program. But it is free growth in the places that show, and it barely dents your recovery.',
+    optional: true,
+    sections: [
+      S('Movement Prep', null, [
+        i('band_pullapart', { sets: 2, reps: '20' }),
+        i('scap_pushup', { sets: 2, reps: '12' })
+      ]),
+      S('Delts', 'Chase the burn here, not the weight.', [
+        i('lat_raise', { role: 'isolation', reps: '15-20' }),
+        i('rear_delt_fly', { role: 'isolation', reps: '15-20' }),
+        i('shrug', { role: 'isolation' })
+      ]),
+      S('Arms', 'Superset the curl and the triceps movement to save time.', [
+        i('cable_curl', { role: 'isolation' }),
+        i('skullcrusher', { role: 'isolation' })
+      ]),
+      S('Calves', null, [
+        i('calf_raise', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('cable_crunch', { role: 'core' }),
+        i('side_plank', { sets: 2, reps: '10 reach-throughs ea', rest: 45 })
+      ]),
+      S('Durability Block', null, [
+        i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
+        NECK
+      ])
+    ]
+  }
+];
 
 /* ========================================================================
-   BLOCK 3 — POWER (Weeks 9-12)
+   PHASE 2 — weeks 9-16 · Add the load
    ===================================================================== */
-const B3_A = {
-  id: 'b3a', day: 0, name: 'Contrast Lower + Push',
-  focus: 'Heavy singles paired with jumps. Teaching strength to move fast.',
-  brief: 'Contrast training: a heavy set primes your nervous system, then you immediately express it in a jump. Rest 30-45 s between the heavy set and the jump — long enough to recover, short enough to still be potentiated.',
-  sections: [
-    PREP_LOWER,
-    S('Reactive Plyometrics', 'Highest-value, highest-cost drills in the program. Ground contact should sound like ONE sound.', [
-      i('pogo', { sets: 3, reps: '12 contacts', rest: 60 }),
-      i('depth_jump', { sets: [4, 4, 4, 2], reps: '4', rest: 120, note: 'Box 18-24". Touch and go. If you have to sink deep, the box is too tall.' })
-    ]),
-    S('Contrast Pair A', 'Squat, rest 40 s, then jump. That is one round.', [
-      i('back_squat', { sets: [4, 4, 5, 3], reps: [3, 2, 2, 3], pct: [0.85, 0.88, 0.90, 0.75], rest: 40, pair: 'A' }),
-      i('block_jump', { sets: [4, 4, 5, 3], reps: '3', rest: 180, pair: 'A', note: 'Max height every rep. Reach for a real target.' })
-    ]),
-    S('Contrast Pair B', null, [
-      i('bench', { sets: 4, reps: '3', pct: [0.85, 0.87, 0.90, 0.75], rest: 40, pair: 'B' }),
-      i('med_slam', { sets: 4, reps: '5', rest: 150, pair: 'B', note: 'Violent. Every rep 100%.' })
-    ]),
-    S('Accessory', null, [
-      i('db_incline', { sets: 3, reps: '8', rpe: 8, rest: 90 }),
-      i('lat_raise', { sets: 3, reps: '15', rpe: 8, rest: 45 }),
-      i('triceps_ext', { sets: 3, reps: '12', rpe: 8, rest: 45 })
-    ]),
-    S('Durability Block', null, [
-      i('calf_raise', { sets: 4, reps: '8', tempo: '2-2-1', rpe: 8, rest: 75 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
-      NECK
-    ])
-  ]
-};
-
-const B3_B = {
-  id: 'b3b', day: 1, name: 'Max Pull + Shoulder Armor',
-  focus: 'Heavy low-rep pulling. Keep the armor work honest.',
-  brief: 'Intensity is up everywhere this block, including the pull. The armor work never gets heavier — it gets more attentive.',
-  sections: [
-    PREP_UPPER,
-    S('Main Pull', null, [
-      i('pullup', { sets: 5, reps: '3', rpe: 9, rest: 180, note: 'Weighted. Heaviest pull-ups of the program.' }),
-      i('bb_row', { sets: [4, 4, 4, 2], reps: '5', rpe: [8.5, 9, 9, 6], rest: 150 })
-    ]),
-    S('Volume Pull', null, [
-      i('chest_supported_row', { sets: 3, reps: '10', rpe: 8, rest: 75 }),
-      i('curl', { sets: 3, reps: '10', rpe: 8, rest: 45 })
-    ]),
-    ARMOR_SHOULDER,
-    S('Core', null, [
-      i('hanging_leg_raise', { sets: 3, reps: '12', rest: 60 }),
-      i('pallof', { sets: 3, reps: '10 ea side', rpe: 8, rest: 45 }),
-      i('dead_bug', { sets: 3, reps: '8 ea side', rpe: 7, rest: 45 })
-    ]),
-    S('Carry', null, [
-      i('bottoms_up_carry', { sets: 3, reps: '25 m ea arm', rpe: 8, rest: 60 })
-    ])
-  ]
-};
-
-const B3_C = {
-  id: 'b3c', day: 2, name: 'Top Speed + Reactive Agility',
-  focus: 'Flying sprints and reacting to cues. The fastest you will move all week.',
-  brief: 'Flying sprints expose you to true max velocity, which is the best hamstring insurance that exists. Get properly warm first — this is the one session where a poor warm-up will actually hurt you.',
-  sections: [
-    PREP_SPEED,
-    S('Max Velocity', 'Full recovery — 3 minutes between flying sprints. No exceptions.', [
-      i('flying_sprint', { sets: [3, 4, 4, 2], reps: '20 m fly', rest: 180 }),
-      i('sprint_accel', { sets: [5, 6, 6, 4], reps: '20 m', rest: 120 })
-    ]),
-    S('Reactive Agility', null, [
-      i('pro_agility', { sets: 4, reps: '1 timed run', rest: 150, note: 'Log the best time. Compare to block 2.' }),
-      i('reactive_shuffle', { sets: 6, reps: '6 s', rest: 75 }),
-      i('approach_footwork', { sets: 4, reps: '5 approaches', rest: 60, note: 'At full match speed now.' })
-    ]),
-    S('Conditioning', 'Kept light on purpose — the power block is what matters right now.', [
-      i('zone2', { sets: 1, reps: '20 min', note: 'Easy bike or row. Recovery, not a workout.' })
-    ]),
-    S('Durability Block', null, [
-      i('copenhagen', { sets: 3, reps: '30 s ea side', rest: 45 }),
-      i('nordic', { sets: 2, reps: '5', rest: 75, note: 'Light day. Just keeping the pattern.' }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 })
-    ])
-  ]
-};
-
-const B3_D = {
-  id: 'b3d', day: 3, name: 'Power Hinge + Contrast',
-  focus: 'Hang cleans, heavy pulls, and broad jumps off the back of RDLs.',
-  brief: 'The hinge version of Monday. Cleans first while you are fresh — technical lifts never go after fatigue.',
-  sections: [
-    S('Movement Prep', null, [
-      i('hip_90_90', { sets: 1, reps: '10 switches' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('med_scoop_toss', { sets: 3, reps: '5' }),
-      i('pogo_prep', { sets: 2, reps: '20 contacts' })
-    ]),
-    S('Olympic Derivative', null, [
-      i('hang_clean', { sets: 5, reps: '2', pct: [0.80, 0.85, 0.88, 0.70], rest: 180 }),
-      i('jump_shrug', { sets: 5, reps: '3', pct: [0.42, 0.45, 0.48, 0.35], rest: 180, note: 'Substitute if you are not cleaning.' })
-    ]),
-    S('Main Hinge', null, [
-      i('trap_dl', { sets: [4, 4, 4, 2], reps: '3', pct: [0.85, 0.88, 0.90, 0.75], rest: 210 })
-    ]),
-    S('Contrast Pair C', 'RDL, rest 40 s, broad jump.', [
-      i('rdl', { sets: 3, reps: '5', rpe: 8, rest: 40, pair: 'C' }),
-      i('broad_jump', { sets: 3, reps: '3', rest: 150, pair: 'C', note: 'Chase your PR distance.' })
-    ]),
-    S('Durability Block', null, [
-      i('nordic', { sets: 4, reps: '6', rest: 90 }),
-      i('seated_calf', { sets: 4, reps: '10', tempo: '2-2-1', rpe: 8, rest: 75 }),
-      i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
-    ]),
-    S('Core', null, [
-      i('ab_wheel', { sets: 3, reps: '10', rest: 60 }),
-      i('suitcase_carry', { sets: 3, reps: '30 m ea', rpe: 8, rest: 60 })
-    ])
-  ]
-};
-
-const B3_E = {
-  id: 'b3e', day: 5, name: 'JUMP DAY',
-  focus: 'The money session. Max approach jumps, reactive plyos, and nothing that gets in the way.',
-  brief: 'This is the session the whole program points at. Warm up thoroughly, then jump with total intent. The rule is absolute: the moment your jump height drops, that exercise is over. Chasing reps here makes you worse, not better.',
-  sections: [
-    S('Movement Prep', 'Be genuinely warm before you jump. 10 minutes minimum.', [
-      i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
-      i('world_greatest', { sets: 1, reps: '5 ea side' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('pogo_prep', { sets: 3, reps: '20 contacts' }),
-      i('snap_down', { sets: 2, reps: '5' })
-    ]),
-    S('Max Jumps', 'Fresh, maximal, measured. Touch a real target and know the number.', [
-      i('approach_jump', { sets: [5, 6, 6, 4], reps: '2', rest: 120, note: 'Full game approach. Stop the moment height drops off.' }),
-      i('block_jump', { sets: 4, reps: '3', rest: 105 })
-    ]),
-    S('Reactive Plyometrics', null, [
-      i('depth_jump', { sets: 4, reps: '3', rest: 120 }),
-      i('hurdle_hop', { sets: 4, reps: '6 hurdles', rest: 90, note: 'Stiff ankles. Land and leave.' })
-    ]),
-    S('Loaded Power', null, [
-      i('trap_jump', { sets: 4, reps: '3', pct: [0.25, 0.28, 0.30, 0.22], rest: 120 }),
-      i('med_rot_throw', { sets: 3, reps: '4 ea side', rest: 75 })
-    ]),
-    S('Strength Maintenance', 'Keep it brief. You already did the important work.', [
-      i('ohp', { sets: 3, reps: '4', pct: [0.82, 0.85, 0.88, 0.72], rest: 150 }),
-      i('db_row', { sets: 3, reps: '8 ea', rpe: 8, rest: 90 }),
-      i('dip', { sets: 3, reps: '8', rpe: 8, rest: 75 })
-    ]),
-    S('Durability Block', null, [
-      i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
-      NECK
-    ])
-  ]
-};
+const P2 = [
+  {
+    id: 'p2-lowerA', day: 0, name: 'Lower — Heavy Squat',
+    focus: 'Real weight on the bar, then machine volume behind it.',
+    brief: 'Percentages arrive this phase. Getting stronger in the squat is what raises the ceiling on every set of leg work you do afterwards — a leg press you can load with 100 more pounds is a bigger leg press.',
+    sections: [
+      PREP_LOWER,
+      S('Spring Maintenance', null, [
+        i('pogo', { role: 'plyo', reps: '12 contacts' }),
+        i('depth_drop', { role: 'plyo', reps: '4', note: 'Box 18-24". Step off, land silently, freeze 2 s.' })
+      ]),
+      S('Main Lift', null, [
+        i('back_squat', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('hack_squat', { role: 'secondary', note: 'No hack squat? Leg press with your feet low on the platform.' }),
+        i('walking_lunge', { role: 'accessory', reps: '10 ea leg' })
+      ]),
+      S('Isolation', null, [
+        i('leg_ext', { role: 'isolation' })
+      ]),
+      S('Calves', null, [
+        i('calf_raise', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('hanging_leg_raise', { role: 'core' })
+      ]),
+      S('Durability Block', null, [
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 }),
+        NECK
+      ])
+    ]
+  },
+  {
+    id: 'p2-upperA', day: 1, name: 'Upper — Heavy Push',
+    focus: 'Bench press at percentage, dips, and delts.',
+    brief: 'Flat bench takes over as the primary so you have a hard strength number to chase. Keep the incline and fly work — pressing strength builds the chest, but the stretched positions are what fill it out.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('bench', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('db_incline', { role: 'secondary' }),
+        i('dip', { role: 'accessory', note: 'Add a belt once you can do 12 clean bodyweight reps.' })
+      ]),
+      S('Isolation', null, [
+        i('lat_raise', { role: 'isolation' }),
+        i('skullcrusher', { role: 'isolation' }),
+        i('cable_fly', { role: 'isolation' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p2-jump', day: 2, name: 'Jump & Move',
+    focus: 'Loaded jumps and reactive work at maintenance dose.',
+    brief: 'Same job as phase 1 — protect the athlete while the bodybuilder does his work. Trap bar jumps enter because a heavier you needs to learn to move the new weight fast.',
+    sections: [
+      PREP_JUMP,
+      S('Max Jumps', 'Quality only. The set ends when height drops.', [
+        i('approach_jump', { role: 'plyo', sets: [4, 5, 5, 3], reps: '2', rest: 120 }),
+        i('block_jump', { role: 'plyo', rest: 100 })
+      ]),
+      S('Loaded Power', null, [
+        i('trap_jump', { role: 'plyo', pct: [0.24, 0.26, 0.28, 0.20], rest: 110, note: 'Reset on the floor between reps.' }),
+        i('med_slam', { sets: 3, reps: '5', rest: 75 })
+      ]),
+      S('Court Movement', null, [
+        i('approach_footwork', { sets: 3, reps: '5 approaches', rest: 60 }),
+        i('pro_agility', { sets: 2, reps: '1 timed run', rest: 150, note: 'Log the time. It should not get worse as you gain.' })
+      ]),
+      S('Aerobic', null, [
+        i('zone2', { sets: 1, reps: '15-20 min' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 2, reps: '5', rest: 75 }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p2-lowerB', day: 3, name: 'Lower — Heavy Hinge',
+    focus: 'Trap bar deadlift at percentage, then hamstring volume.',
+    brief: 'Heaviest pulling of the program. Brace hard, keep the lats tight, and end the set the moment your back position changes — no rep is worth a tweaked back on a gaining phase.',
+    sections: [
+      S('Movement Prep', null, [
+        i('hip_90_90', { sets: 1, reps: '10 switches' }),
+        i('ankle_rock', { sets: 2, reps: '8 ea side' }),
+        i('bird_dog', { sets: 2, reps: '6 ea side' }),
+        i('med_scoop_toss', { sets: 2, reps: '5', note: 'Primer — wakes up the hinge before you load it.' })
+      ]),
+      S('Main Lift', null, [
+        i('trap_dl', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('rdl', { role: 'secondary' }),
+        i('seated_leg_curl', { role: 'accessory' })
+      ]),
+      S('Isolation', null, [
+        i('back_ext', { role: 'isolation' })
+      ]),
+      S('Calves', null, [
+        i('seated_calf', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('cable_crunch', { role: 'core' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 3, reps: '6', rest: 90 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p2-upperB', day: 4, name: 'Upper — Heavy Pull',
+    focus: 'Weighted pull-ups, barbell rows, and thicker arms.',
+    brief: 'Weighted pull-ups are the best single indicator of an athlete who is both strong and lean, and they get harder as you gain — which is exactly why they stay the primary. If your weighted pull-up climbs while the scale climbs, everything is working.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('pullup', { role: 'primary', reps: '5-6', note: 'Weighted. Belt or vest.' })
+      ]),
+      S('Volume', null, [
+        i('bb_row', { role: 'secondary', note: 'Torso does not move. No body english.' }),
+        i('lat_pulldown', { role: 'accessory' })
+      ]),
+      S('Isolation', null, [
+        i('pullover', { role: 'isolation', note: 'Lats only. This is what builds width.' }),
+        i('preacher_curl', { role: 'isolation' }),
+        i('hammer_curl', { role: 'isolation' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p2-pump', day: 5, name: 'Pump & Patch',
+    focus: 'Arms, delts, calves, core.',
+    brief: 'Optional, cheap, and where the visible details get built. Drop it without guilt on a heavy volleyball week.',
+    optional: true,
+    sections: [
+      S('Movement Prep', null, [
+        i('band_pullapart', { sets: 2, reps: '20' }),
+        i('scap_pushup', { sets: 2, reps: '12' })
+      ]),
+      S('Delts', null, [
+        i('lat_raise', { role: 'isolation', reps: '15-20' }),
+        i('rear_delt_fly', { role: 'isolation', reps: '15-20' }),
+        i('shrug', { role: 'isolation' })
+      ]),
+      S('Arms', 'Superset these.', [
+        i('close_grip_bench', { role: 'accessory', reps: '10-12' }),
+        i('cable_curl', { role: 'isolation' }),
+        i('pushdown', { role: 'isolation' })
+      ]),
+      S('Calves', null, [
+        i('calf_raise', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('pallof', { role: 'core', reps: '10 ea side' }),
+        i('side_plank', { sets: 2, reps: '10 reach-throughs ea', rest: 45 })
+      ]),
+      S('Durability Block', null, [
+        i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        NECK
+      ])
+    ]
+  }
+];
 
 /* ========================================================================
-   BLOCK 4 — PEAK (Weeks 13-16)
+   PHASE 3 — weeks 17-24 · Fill the frame
    ===================================================================== */
-const B4_A = {
-  id: 'b4a', day: 0, name: 'Peak Lower + Push',
-  focus: 'Near-max singles, minimal volume, maximum intent.',
-  brief: 'Volume drops hard this block and intensity peaks. You should leave every session feeling sharp, not destroyed. If you are sore for two days, you did too much.',
-  sections: [
-    PREP_LOWER,
-    S('Jump Primer', null, [
-      i('pogo', { sets: 3, reps: '12 contacts', rest: 60 }),
-      i('approach_jump', { sets: [5, 5, 4, 3], reps: '2', rest: 120, note: 'Fresh and maximal. This is a skill rep, not conditioning.' })
-    ]),
-    S('Contrast Pair A', null, [
-      i('back_squat', { sets: [4, 4, 3, 2], reps: [2, 2, 2, 3], pct: [0.90, 0.92, 0.85, 0.70], rest: 45, pair: 'A' }),
-      i('block_jump', { sets: [4, 4, 3, 2], reps: '3', rest: 210, pair: 'A' })
-    ]),
-    S('Push', null, [
-      i('bench', { sets: [4, 4, 3, 2], reps: '3', pct: [0.88, 0.90, 0.85, 0.72], rest: 180 }),
-      i('med_slam', { sets: 3, reps: '5', rest: 75 })
-    ]),
-    S('Accessory', 'Trimmed to essentials.', [
-      i('lat_raise', { sets: 2, reps: '15', rpe: 8, rest: 45 }),
-      i('triceps_ext', { sets: 2, reps: '12', rpe: 8, rest: 45 })
-    ]),
-    S('Durability Block', null, [
-      i('calf_raise', { sets: 3, reps: '8', tempo: '2-2-1', rpe: 7, rest: 75 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 }),
-      NECK
-    ])
-  ]
-};
-
-const B4_B = {
-  id: 'b4b', day: 1, name: 'Pull + Armor (maintain)',
-  focus: 'Hold your strength, protect your shoulder, stay fresh.',
-  brief: 'Maintenance session. Enough stimulus to keep what you built, not enough to dig a hole.',
-  sections: [
-    PREP_UPPER,
-    S('Main Pull', null, [
-      i('pullup', { sets: 4, reps: '3', rpe: 8, rest: 150, note: 'Weighted, but leave a rep in the tank.' }),
-      i('chest_supported_row', { sets: 3, reps: '8', rpe: 8, rest: 90 })
-    ]),
-    ARMOR_SHOULDER,
-    S('Core', null, [
-      i('hanging_leg_raise', { sets: 3, reps: '12', rest: 60 }),
-      i('pallof', { sets: 2, reps: '10 ea side', rpe: 7, rest: 45 }),
-      i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
-    ]),
-    S('Accessory', null, [
-      i('curl', { sets: 2, reps: '12', rpe: 8, rest: 45 }),
-      i('farmer_carry', { sets: 2, reps: '40 m', rpe: 8, rest: 75 })
-    ])
-  ]
-};
-
-const B4_C = {
-  id: 'b4c', day: 2, name: 'Sharp Speed',
-  focus: 'Short, fast, and done. In and out in 35 minutes.',
-  brief: 'Speed work in a peak block is about staying sharp, not building. Low reps, full recovery, walk out feeling fast.',
-  sections: [
-    PREP_SPEED,
-    S('Speed', null, [
-      i('sprint_accel', { sets: [5, 5, 4, 3], reps: '20 m', rest: 150 }),
-      i('flying_sprint', { sets: [3, 3, 2, 2], reps: '20 m fly', rest: 210 })
-    ]),
-    S('Court Movement', null, [
-      i('approach_footwork', { sets: 3, reps: '5 approaches', rest: 60 }),
-      i('crossover_step', { sets: 3, reps: '3 ea side', rest: 60 })
-    ]),
-    S('Durability Block', null, [
-      i('nordic', { sets: 2, reps: '5', rest: 75 }),
-      i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 })
-    ]),
-    S('Recovery', null, [
-      i('breath_down', { sets: 1, reps: '4 min' })
-    ])
-  ]
-};
-
-const B4_D = {
-  id: 'b4d', day: 3, name: 'Peak Hinge',
-  focus: 'Heavy pull, fast cleans, low volume.',
-  brief: 'Last heavy pulling of the program. Two working sets that matter, then get out.',
-  sections: [
-    S('Movement Prep', null, [
-      i('hip_90_90', { sets: 1, reps: '10 switches' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('med_scoop_toss', { sets: 3, reps: '5' })
-    ]),
-    S('Olympic Derivative', null, [
-      i('hang_clean', { sets: [5, 5, 4, 3], reps: '2', pct: [0.85, 0.88, 0.82, 0.70], rest: 180 }),
-      i('jump_shrug', { sets: 5, reps: '3', pct: [0.48, 0.50, 0.45, 0.35], rest: 180, note: 'Substitute if you are not cleaning.' })
-    ]),
-    S('Main Hinge', null, [
-      i('trap_dl', { sets: [3, 3, 2, 2], reps: '2', pct: [0.90, 0.93, 0.85, 0.72], rest: 240 })
-    ]),
-    S('Single Leg', null, [
-      i('step_up', { sets: 2, reps: '6 ea', rpe: 7, rest: 90 }),
-      i('nordic', { sets: 3, reps: '5', rest: 90 })
-    ]),
-    S('Durability Block', null, [
-      i('seated_calf', { sets: 3, reps: '10', tempo: '2-2-1', rpe: 7, rest: 75 }),
-      i('tib_raise', { sets: 2, reps: '20', rpe: 7, rest: 45 })
-    ])
-  ]
-};
-
-const B4_E = {
-  id: 'b4e', day: 5, name: 'EXPRESSION DAY',
-  focus: 'Jump as high as you can. Everything else is optional.',
-  brief: 'Warm up, get sharp, and go find out how high you can jump. Log the number. This is what 16 weeks of work is for.',
-  sections: [
-    S('Movement Prep', null, [
-      i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
-      i('world_greatest', { sets: 1, reps: '5 ea side' }),
-      i('ankle_rock', { sets: 2, reps: '8 ea side' }),
-      i('pogo_prep', { sets: 3, reps: '20 contacts' }),
-      i('snap_down', { sets: 2, reps: '5' }),
-      i('box_jump', { sets: 2, reps: '3', rest: 60 })
-    ]),
-    S('Max Expression', 'Fully rested between attempts. Chase a number.', [
-      i('approach_jump', { sets: [6, 6, 5, 4], reps: '2', rest: 150, note: 'Log your best touch height in Progress.' }),
-      i('block_jump', { sets: 4, reps: '2', rest: 120 }),
-      i('broad_jump', { sets: 3, reps: '2', rest: 120 })
-    ]),
-    S('Reactive', 'Keep it minimal. Quality only.', [
-      i('depth_jump', { sets: [3, 3, 2, 2], reps: '3', rest: 120 }),
-      i('hurdle_hop', { sets: 3, reps: '6 hurdles', rest: 90 })
-    ]),
-    S('Power Maintenance', null, [
-      i('trap_jump', { sets: 3, reps: '3', pct: [0.28, 0.30, 0.25, 0.22], rest: 120 }),
-      i('med_rot_throw', { sets: 3, reps: '4 ea side', rest: 75 })
-    ]),
-    S('Durability Block', null, [
-      i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
-      NECK,
-      i('breath_down', { sets: 1, reps: '4 min' })
-    ])
-  ]
-};
+const P3 = [
+  {
+    id: 'p3-lowerA', day: 0, name: 'Lower — Squat Density',
+    focus: 'Heavy squats, paused squats, and leg press taken past comfortable.',
+    brief: 'Last phase, and the one where the legs actually look different. Pause squats kill the bounce so the muscle does all the work. On the leg press, the final set gets a myo-rep finish: go to failure, rest 15 seconds, grab 3-5 more, repeat twice.',
+    sections: [
+      PREP_LOWER,
+      S('Spring Maintenance', null, [
+        i('pogo', { role: 'plyo', reps: '12 contacts' }),
+        i('box_jump', { role: 'plyo' })
+      ]),
+      S('Main Lift', null, [
+        i('back_squat', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('pause_squat', { role: 'secondary', pct: [0.62, 0.65, 0.68, 0.55], note: 'Full 2-second dead stop at the bottom. Stay braced.' }),
+        i('leg_press', { role: 'accessory', note: 'Last set: myo-reps. Failure, rest 15 s, 3-5 more, twice.' })
+      ]),
+      S('Isolation', null, [
+        i('leg_ext', { role: 'isolation', note: 'Last set: drop the weight 30% and go again to failure.' })
+      ]),
+      S('Calves', null, [
+        i('calf_raise', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('cable_crunch', { role: 'core' })
+      ]),
+      S('Durability Block', null, [
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 }),
+        NECK
+      ])
+    ]
+  },
+  {
+    id: 'p3-upperA', day: 1, name: 'Upper — Push Density',
+    focus: 'Incline barbell, dumbbells, and everything taken close to failure.',
+    brief: 'Rests get shorter on the accessories and the last set of each isolation movement gets a drop set. This is the highest-effort push work of the program — it should be uncomfortable, and it should be over in 70 minutes.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('incline_bb_press', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('db_flat_press', { role: 'secondary' }),
+        i('dip', { role: 'accessory', note: 'Weighted. Last set to failure.' })
+      ]),
+      S('Isolation', null, [
+        i('lat_raise', { role: 'isolation', note: 'Last set: drop 30% and go again.' }),
+        i('cable_fly', { role: 'isolation', note: 'Hold the stretch a beat on every rep.' }),
+        i('pushdown', { role: 'isolation', note: 'Last set: drop 30% and go again.' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p3-jump', day: 2, name: 'Jump & Move',
+    focus: 'Proving the new weight still moves fast.',
+    brief: 'By now you are carrying most of the 10 pounds. This is where you find out it was the right kind — your approach jump should be at least where it started, and your 5-10-5 should not have slipped. Keep the volume low and the intent maximal.',
+    sections: [
+      PREP_JUMP,
+      S('Max Jumps', null, [
+        i('approach_jump', { role: 'plyo', sets: [5, 5, 4, 3], reps: '2', rest: 130, note: 'Log the best touch. This is the number that matters.' }),
+        i('block_jump', { role: 'plyo', rest: 110 })
+      ]),
+      S('Reactive', 'Low volume, high quality. Ground contact should sound like one sound.', [
+        i('depth_jump', { role: 'plyo', rest: 120 }),
+        i('trap_jump', { role: 'plyo', pct: [0.26, 0.28, 0.30, 0.22], rest: 110 })
+      ]),
+      S('Court Movement', null, [
+        i('approach_footwork', { sets: 3, reps: '5 approaches', rest: 60 }),
+        i('pro_agility', { sets: 2, reps: '1 timed run', rest: 150 })
+      ]),
+      S('Aerobic', null, [
+        i('zone2', { sets: 1, reps: '15-20 min' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 2, reps: '5', rest: 75 }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p3-lowerB', day: 3, name: 'Lower — Hinge Density',
+    focus: 'Trap bar, RDLs, and hamstrings from both ends.',
+    brief: 'Both leg curl variations appear together this phase — seated for the long-length stretch, lying for the short. It is more hamstring work than feels reasonable, and it is why they will actually grow.',
+    sections: [
+      S('Movement Prep', null, [
+        i('hip_90_90', { sets: 1, reps: '10 switches' }),
+        i('ankle_rock', { sets: 2, reps: '8 ea side' }),
+        i('bird_dog', { sets: 2, reps: '6 ea side' }),
+        i('med_scoop_toss', { sets: 2, reps: '5' })
+      ]),
+      S('Main Lift', null, [
+        i('trap_dl', { role: 'primary' })
+      ]),
+      S('Volume', null, [
+        i('rdl', { role: 'secondary' }),
+        i('seated_leg_curl', { role: 'accessory', note: 'Last set: drop 30% and go again to failure.' })
+      ]),
+      S('Isolation', null, [
+        i('lying_leg_curl', { role: 'isolation' }),
+        i('hip_thrust', { role: 'isolation', reps: '12' })
+      ]),
+      S('Calves', null, [
+        i('seated_calf', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('ab_wheel', { role: 'core', reps: '10-12' })
+      ]),
+      S('Durability Block', null, [
+        i('nordic', { sets: 3, reps: '6', rest: 90 }),
+        i('copenhagen', { sets: 2, reps: '30 s ea side', rest: 45 })
+      ])
+    ]
+  },
+  {
+    id: 'p3-upperB', day: 4, name: 'Upper — Pull Density',
+    focus: 'Pull-ups, cable rows, and arms taken to failure.',
+    brief: 'Cable rows replace the barbell so you can keep constant tension and push closer to failure without your low back being the thing that gives out first. Full stretch at the front of every rep.',
+    sections: [
+      PREP_UPPER,
+      S('Main Lift', null, [
+        i('pullup', { role: 'primary', reps: '5-6', note: 'Weighted.' })
+      ]),
+      S('Volume', null, [
+        i('cable_row', { role: 'secondary', note: 'Let the blades spread fully on the way out.' }),
+        i('lat_pulldown', { role: 'accessory', note: 'Last set: drop 30% and go again.' })
+      ]),
+      S('Isolation', null, [
+        i('rear_delt_fly', { role: 'isolation' }),
+        i('preacher_curl', { role: 'isolation' }),
+        i('cable_curl', { role: 'isolation', note: 'Last set: drop 30% and go again.' })
+      ]),
+      ARMOR_SHOULDER
+    ]
+  },
+  {
+    id: 'p3-pump', day: 5, name: 'Pump & Patch',
+    focus: 'Arms, delts, calves, core — the finishing details.',
+    brief: 'Optional. By this phase it is mostly about the parts that show in a t-shirt.',
+    optional: true,
+    sections: [
+      S('Movement Prep', null, [
+        i('band_pullapart', { sets: 2, reps: '20' }),
+        i('scap_pushup', { sets: 2, reps: '12' })
+      ]),
+      S('Delts', null, [
+        i('lat_raise', { role: 'isolation', reps: '15-20' }),
+        i('rear_delt_fly', { role: 'isolation', reps: '15-20' }),
+        i('shrug', { role: 'isolation' })
+      ]),
+      S('Arms', 'Superset. Chase the pump.', [
+        i('hammer_curl', { role: 'isolation' }),
+        i('skullcrusher', { role: 'isolation' }),
+        i('pushdown', { role: 'isolation', reps: '20' })
+      ]),
+      S('Calves', null, [
+        i('seated_calf', { role: 'calf', tempo: '2-2-1' })
+      ]),
+      S('Core', null, [
+        i('cable_crunch', { role: 'core' }),
+        i('pallof', { role: 'core', reps: '10 ea side' })
+      ]),
+      S('Durability Block', null, [
+        i('ext_rotation', { sets: 2, reps: '15 ea', rpe: 6, rest: 45 }),
+        i('tib_raise', { sets: 2, reps: '20', rpe: 8, rest: 45 }),
+        NECK
+      ])
+    ]
+  }
+];
 
 /* ---------------------------------------------------------- RECOVERY DAY */
 const RECOVERY_DAY = {
   id: 'recovery', day: 6, name: 'Recovery Flow',
-  focus: 'Move, breathe, eat, sleep. This is training too.',
-  brief: 'Active recovery beats sitting still. 30 minutes of this on Sunday is worth more than an extra hard session, and it is the difference between finishing this program and quitting in week 9.',
+  focus: 'Move, breathe, eat, sleep. Growth happens here, not in the gym.',
+  brief: 'You are training six days and eating in a surplus. The limiting factor on how much muscle you actually build is how well you recover, and this is the cheapest recovery you will ever get.',
   optional: true,
   sections: [
     S('Flow', null, [
@@ -2006,12 +2262,12 @@ const RECOVERY_DAY = {
 
 /* ------------------------------------------------------------ TEST BATTERY */
 const TEST_DAY_A = {
-  id: 'testA', day: 0, name: 'Test Battery — Performance',
-  focus: 'Jumps, speed, and agility. Fresh legs, full effort, real numbers.',
-  brief: 'Come in rested. Warm up properly. Test in this exact order every time — jumps before sprints before strength — so the numbers stay comparable. Log everything in the Progress tab.',
+  id: 'testA', day: 0, name: 'Test Battery — Size & Athleticism',
+  focus: 'Tape, scale, and jumps. Proof that the weight went where you wanted it.',
+  brief: 'On a gaining phase this session answers one question: did I add muscle or did I add padding? Chest, arm and thigh climbing while the waist stays flat is the picture you want. Measure cold, before you train — a pumped arm reads big and means nothing.',
   isTest: true,
   sections: [
-    S('Movement Prep', 'Thorough. You are about to go max effort.', [
+    S('Movement Prep', 'Thorough — you are about to go max effort.', [
       i('leg_swings', { sets: 1, reps: '10 ea / direction' }),
       i('world_greatest', { sets: 1, reps: '5 ea side' }),
       i('ankle_rock', { sets: 2, reps: '8 ea side' }),
@@ -2019,7 +2275,11 @@ const TEST_DAY_A = {
       i('pogo_prep', { sets: 3, reps: '20 contacts' }),
       i('box_jump', { sets: 2, reps: '3', rest: 60 })
     ]),
-    S('Baseline Measurement', 'Do this first — every jump number depends on it.', [
+    S('Body Composition', 'Do this first, cold, before anything else.', [
+      i('test_bodycomp', { sets: 1, reps: '1', metric: 'bodyweight' }),
+      i('test_measure', { sets: 1, reps: 'chest / arm / thigh', metric: 'chest' })
+    ]),
+    S('Baseline Measurement', null, [
       i('test_reach', { sets: 1, reps: '1', metric: 'reach' }),
       i('test_ankle', { sets: 1, reps: '1 ea side', metric: 'ankle' })
     ]),
@@ -2030,17 +2290,14 @@ const TEST_DAY_A = {
     ]),
     S('Speed Test', null, [
       i('test_agility', { sets: 4, reps: '1 timed run', rest: 180, metric: 'agility' })
-    ]),
-    S('Body Composition', null, [
-      i('test_bodycomp', { sets: 1, reps: '1', metric: 'bodyweight' })
     ])
   ]
 };
 
 const TEST_DAY_B = {
   id: 'testB', day: 3, name: 'Test Battery — Strength',
-  focus: 'Establish or re-establish the maxes that drive every percentage in the app.',
-  brief: 'Work up in singles or doubles to a hard-but-clean triple. Stop at the first rep that looks ugly. Enter the 3RM in Settings and the app converts it to an estimated 1RM and re-prescribes everything.',
+  focus: 'Re-establish the maxes that drive every percentage in the app.',
+  brief: 'Work up in singles and doubles to a hard-but-clean triple. Stop at the first rep that looks ugly. Enter each 3RM in Settings and the app converts it to an estimated 1RM and re-prescribes everything downstream.',
   isTest: true,
   sections: [
     S('Movement Prep', null, [
@@ -2066,38 +2323,42 @@ const TEST_DAY_B = {
 };
 
 /* ============================================================== THE BLOCKS */
-const BLOCKS = [
-  {
-    n: 1, name: 'Foundation', weeks: [1, 2, 3, 4], color: '#4f8ff7',
-    tagline: 'Build the chassis',
-    goal: 'Tissue tolerance, movement quality, and a hypertrophy base. Tempo work and low-level landing mechanics.',
-    detail: 'Everything here is slower and more controlled than feels necessary. That is the point: 4 weeks of eccentric and isometric loading builds the tendon stiffness and connective-tissue tolerance that lets you absorb depth jumps in block 3 without your knees complaining. Plyometric volume stays low and landing-focused. Conditioning is aerobic and non-impact so your legs stay fresh.',
-    days: [B1_A, B1_B, B1_C, B1_D, B1_E]
-  },
-  {
-    n: 2, name: 'Strength', weeks: [5, 6, 7, 8], color: '#f7a84f',
-    tagline: 'Build the engine',
-    goal: 'Maximal strength in the squat, trap bar deadlift, and press. Plyometrics step up to depth drops and real box jumps.',
-    detail: 'You cannot jump higher than you can push into the floor, and this is the block that builds the push. Reps drop to 3-5, load climbs to 78-88% of your tested max. Change-of-direction work gets timed so you have a number to chase. Weighted pull-ups start here.',
-    days: [B2_A, B2_B, B2_C, B2_D, B2_E]
-  },
-  {
-    n: 3, name: 'Power', weeks: [9, 10, 11, 12], color: '#e5484d',
-    tagline: 'Wire it fast',
-    goal: 'Convert strength into speed. Contrast pairs, Olympic derivatives, reactive plyometrics, and max approach jumps.',
-    detail: 'The strength you built in block 2 is useless on the court until it becomes fast. Contrast training pairs a heavy set with an immediate jump so your nervous system learns to recruit that force in the 0.2 seconds a takeoff actually gives you. Saturday becomes JUMP DAY — the most important session of the program.',
-    days: [B3_A, B3_B, B3_C, B3_D, B3_E]
-  },
-  {
-    n: 4, name: 'Peak', weeks: [13, 14, 15, 16], color: '#30a46c',
-    tagline: 'Express it',
-    goal: 'Peak intensity, minimal volume, then taper into the week 16 test battery.',
-    detail: 'Volume drops off a cliff and intensity peaks. You should walk out of every session feeling sharp rather than beaten up. Week 15 is a taper and week 16 is the full test battery — you re-run every measurement from week 0 and see exactly what 16 weeks bought you.',
-    days: [B4_A, B4_B, B4_C, B4_D, B4_E]
-  }
+const BLOCK_DEFS = [
+  { n: 1, name: 'Base',        weeks: [1, 2, 3, 4],     color: '#4f8ff7', phase: P1, tagline: 'Learn the patterns',
+    goal: 'Technique, full range of motion, and building tolerance to real volume.',
+    detail: 'You are switching from a power program to a growth program, and the first block is about earning the right to do the hard volume that follows. Two reps in reserve on the main lifts, full range everywhere, and no chasing load yet. The Wednesday jump session starts here and never leaves — it is your insurance that the weight you add is athletic weight.' },
+  { n: 2, name: 'Volume',      weeks: [5, 6, 7, 8],     color: '#7c6cf0', phase: P1, tagline: 'The most sets you will do',
+    goal: 'Peak weekly set counts. This is the block that drives the first visible change.',
+    detail: 'Same exercises as block 1 so you can see progress on the same numbers, but the sets climb and the last set of most isolation work goes to failure. Expect to be sore and hungry. If your jump numbers on Wednesday start dropping, that is the signal you are underfed rather than overtrained.' },
+  { n: 3, name: 'Load',        weeks: [9, 10, 11, 12],  color: '#f7a84f', phase: P2, tagline: 'Get strong again',
+    goal: 'Percentage-based squat, bench, trap bar and pull-up work at 78-86%.',
+    detail: 'Muscle you cannot load eventually stops growing, so this block raises the ceiling. Reps drop to 4-5 on the primaries and the accessory work stays heavy. Weighted pull-ups become the primary pull, which is deliberately unforgiving as your bodyweight climbs — if they keep going up, so is your muscle-to-fat ratio.' },
+  { n: 4, name: 'Grow',        weeks: [13, 14, 15, 16], color: '#e5844d', phase: P2, tagline: 'Volume at the new loads',
+    goal: 'Back to hypertrophy rep ranges, now with a meaningfully stronger base.',
+    detail: 'The pay-off block for the strength you just built. Same 6-8 and 10-12 rep ranges as phase one, but every one of them is now loaded 10-15% heavier. This is usually where people first get asked whether they have been working out.' },
+  { n: 5, name: 'Density',     weeks: [17, 18, 19, 20], color: '#e5484d', phase: P3, tagline: 'Shorter rests, harder finishes',
+    goal: 'Highest-effort block: myo-reps, drop sets, and compressed rest on accessories.',
+    detail: 'Volume is already high, so the extra stimulus comes from effort instead of more sets. Myo-reps on the leg press, drop sets on the isolation work, and rests cut to 45-60 seconds on anything small. Primaries stay heavy and fully rested — that part never gets compromised.' },
+  { n: 6, name: 'Consolidate', weeks: [21, 22, 23, 24], color: '#30a46c', phase: P3, tagline: 'Prove it, then test it',
+    goal: 'Peak intensity at 85-90%, volume pulled back, then the full retest in week 24.',
+    detail: 'Volume drops and intensity peaks so the new muscle gets expressed as strength rather than just size. Week 23 tapers and week 24 re-runs the entire battery — tape, scale, jumps and 3RMs — against your week-zero numbers. Then you decide: keep gaining, or run a short cut to sharpen up at your new weight.' }
 ];
 
-const TOTAL_WEEKS = 16;
+const BLOCKS = BLOCK_DEFS.map(b => ({
+  n: b.n, name: b.name, weeks: b.weeks, color: b.color,
+  tagline: b.tagline, goal: b.goal, detail: b.detail,
+  scheme: SCHEMES[b.n].label,
+  days: b.phase.map(tpl => buildSession(tpl, SCHEMES[b.n]))
+}));
+
+const TOTAL_WEEKS = 24;
+
+/** The three 8-week phases, for the plan overview. */
+const PHASES = [
+  { name: 'Build the base', weeks: '1-8',   blocks: [1, 2], detail: 'Master the patterns, then bury yourself in volume.' },
+  { name: 'Add the load',   weeks: '9-16',  blocks: [3, 4], detail: 'Get stronger, then grow into the new strength.' },
+  { name: 'Fill the frame', weeks: '17-24', blocks: [5, 6], detail: 'Maximum effort, then consolidate and retest.' }
+];
 
 /* ----------------------------------------------------------------- LOOKUPS */
 function blockForWeek(week) {
@@ -2106,7 +2367,7 @@ function blockForWeek(week) {
 
 function weekInBlock(week) {
   const b = blockForWeek(week);
-  return b.weeks.indexOf(week); // 0..3, where 3 is the deload/test week
+  return b.weeks.indexOf(week); // 0..3, where 3 is the deload week
 }
 
 function isDeloadWeek(week) {
@@ -2120,12 +2381,13 @@ function isTestWeek(week) {
 /** All sessions for a given week, in day order. */
 function weekSessions(week) {
   if (isTestWeek(week)) {
+    const light = BLOCKS[5].days.find(d => d.day === 4);
     return [
       TEST_DAY_A,
-      { ...B4_B, name: 'Pull + Armor (light)', brief: 'Light maintenance between test days. Nothing heavy.' },
+      { ...light, day: 1, name: 'Pull — light', brief: 'Light maintenance between test days. Two sets per movement, nothing near failure.' },
       { ...RECOVERY_DAY, day: 2, name: 'Recovery (pre-test)' },
       TEST_DAY_B,
-      { ...B4_E, day: 5, name: 'Free Play', brief: 'Go play volleyball. Enjoy the new vertical.', optional: true },
+      { ...BLOCKS[5].days.find(d => d.day === 2), day: 4, name: 'Free Play', brief: 'Go play volleyball at your new bodyweight. This is the whole point.', optional: true },
       RECOVERY_DAY
     ].sort((a, b) => a.day - b.day);
   }
@@ -2147,11 +2409,16 @@ function atWeek(value, wib) {
   return value;
 }
 
+const SUPPORT_RE = /prep|recovery|down-regulate|flow|tissue|aerobic|durability|spring/i;
+/* Armor work is real work, but counting it as "pull volume" would flatter the
+   numbers, so the per-pattern view leaves it out. */
+const NON_HYPERTROPHY_RE = /prep|recovery|down-regulate|flow|tissue|aerobic|durability|spring|armor/i;
+
 /** Total planned working sets in a session (excludes prep/recovery). */
 function sessionVolume(session, wib) {
   let sets = 0;
   for (const sec of session.sections) {
-    if (/prep|recovery|down-regulate|flow|tissue|aerobic/i.test(sec.name)) continue;
+    if (SUPPORT_RE.test(sec.name)) continue;
     for (const it of sec.items) sets += atWeek(it.sets, wib) || 0;
   }
   return sets;
@@ -2170,129 +2437,240 @@ function sessionMinutes(session, wib) {
   return Math.round(mins / 5) * 5;
 }
 
-return { blockForWeek, weekInBlock, isDeloadWeek, isTestWeek, weekSessions, sessionFor, dayLabel, atWeek, sessionVolume, sessionMinutes, MAX_LIFTS, METRICS, RECOVERY_DAY, TEST_DAY_A, TEST_DAY_B, BLOCKS, TOTAL_WEEKS };
+/**
+ * Weekly set count per movement pattern — the number that actually drives
+ * hypertrophy, and worth being able to see.
+ */
+function weeklySetsByPattern(week) {
+  const wib = weekInBlock(week);
+  const out = {};
+  for (const s of weekSessions(week)) {
+    if (s.optional) continue;
+    for (const sec of s.sections) {
+      if (NON_HYPERTROPHY_RE.test(sec.name)) continue;
+      for (const it of sec.items) {
+        const p = ex(it.ex).pattern || 'other';
+        out[p] = (out[p] || 0) + (atWeek(it.sets, wib) || 0);
+      }
+    }
+  }
+  return out;
+}
+
+return { blockForWeek, weekInBlock, isDeloadWeek, isTestWeek, weekSessions, sessionFor, dayLabel, atWeek, sessionVolume, sessionMinutes, weeklySetsByPattern, MAX_LIFTS, METRICS, RECOVERY_DAY, TEST_DAY_A, TEST_DAY_B, BLOCKS, TOTAL_WEEKS, PHASES };
 });
 
 __def('nutrition', function () {
 /**
- * Fueling model for a lean-mass-preserving recomposition in a jumping athlete.
+ * Fueling model for a lean gaining phase.
  *
- * The whole strategy: a small enough deficit that you never lose explosiveness,
- * carbs kept high because a vertical jump is glycogen-dependent, and protein
- * high enough that the weight you lose is fat and not the muscle you need.
+ * The strategy: a surplus big enough to build muscle and small enough that you
+ * do not spend the back half of the year carrying fat you have to diet off.
+ * Everything is derived from a target rate of gain rather than picked out of the
+ * air, so changing the target changes the whole plan coherently.
  */
 
-function computeTargets({ weightLb = 190, heightIn = 75, age = 28, activity = 1.7 } = {}) {
+/** Roughly the energy cost of a pound of mixed lean-and-fat tissue gain. */
+const KCAL_PER_LB = 3500;
+
+/**
+ * Training days carry a bigger surplus than rest days — you can use the food
+ * better on a day you trained. REST_SHARE is the rest-day surplus expressed as
+ * a fraction of the training-day surplus.
+ */
+const REST_SHARE = 0.35;
+const TRAINING_DAYS = 5;
+const REST_DAYS = 2;
+
+const GOALS = {
+  leanGain: { name: 'Lean gain',   rate: 0.45,  blurb: 'Add muscle at about half a pound a week. Slow enough to stay lean.' },
+  slowGain: { name: 'Slower gain', rate: 0.30,  blurb: 'Minimal fat gain, but roughly nine months to add 10 lb.' },
+  maintain: { name: 'Maintain',    rate: 0,     blurb: 'Hold your weight and keep training. Useful in season.' },
+  recomp:   { name: 'Lean out',    rate: -0.50, blurb: 'A small deficit for sharpening up once you reach your target weight.' }
+};
+
+function computeTargets({
+  weightLb = 190, heightIn = 75, age = 28, activity = 1.7, goal = 'leanGain'
+} = {}) {
   const kg = weightLb / 2.2046;
   const cm = heightIn * 2.54;
   const bmr = Math.round(10 * kg + 6.25 * cm - 5 * age + 5);
   const tdee = Math.round(bmr * activity);
 
-  // Training days sit just under maintenance; rest days carry the deficit.
-  const trainKcal = Math.round((tdee - 150) / 10) * 10;
-  const restKcal = Math.round((tdee - 500) / 10) * 10;
+  const g = GOALS[goal] || GOALS.leanGain;
+  const weeklyDelta = g.rate * KCAL_PER_LB;
 
-  const protein = Math.round(weightLb * 1.0);      // 1.0 g/lb — protects lean mass in a deficit
-  const fat = Math.round(weightLb * 0.4);          // 0.4 g/lb — floor for hormones, no higher
+  // Solve for the training-day delta given the rest-day share.
+  const trainDelta = weeklyDelta / (TRAINING_DAYS + REST_DAYS * REST_SHARE);
+  const restDelta = trainDelta * REST_SHARE;
+
+  const trainKcal = Math.round((tdee + trainDelta) / 10) * 10;
+  const restKcal = Math.round((tdee + restDelta) / 10) * 10;
+
+  // Protein high enough to make the surplus build muscle rather than just mass.
+  const protein = Math.round(weightLb * 1.0);
+  const fat = Math.round(weightLb * 0.45);
   const proteinKcal = protein * 4;
   const fatKcal = fat * 9;
 
-  const trainCarb = Math.round((trainKcal - proteinKcal - fatKcal) / 4);
-  const restCarb = Math.round((restKcal - proteinKcal - fatKcal) / 4);
-
   return {
+    goal, goalName: g.name, targetRate: g.rate,
     bmr, tdee,
-    train: { kcal: trainKcal, protein, fat, carb: trainCarb },
-    rest: { kcal: restKcal, protein, fat, carb: restCarb },
-    weeklyAvg: Math.round((trainKcal * 5 + restKcal * 2) / 7),
-    deficitPerWeek: Math.round(tdee * 7 - (trainKcal * 5 + restKcal * 2)),
-    water: Math.round(weightLb * 0.6),             // fl oz baseline, more on court days
-    fiber: Math.round((trainKcal / 1000) * 14),
+    train: { kcal: trainKcal, protein, fat, carb: Math.round((trainKcal - proteinKcal - fatKcal) / 4) },
+    rest: { kcal: restKcal, protein, fat, carb: Math.round((restKcal - proteinKcal - fatKcal) / 4) },
+    weeklyAvg: Math.round((trainKcal * TRAINING_DAYS + restKcal * REST_DAYS) / 7),
+    weeklyDelta: Math.round(trainKcal * TRAINING_DAYS + restKcal * REST_DAYS - tdee * 7),
+    water: Math.round(weightLb * 0.6),
+    fiber: Math.round((trainKcal / 1000) * 12),
     sodium: '4-6 g/day — you sweat a lot on the court and cramping kills jumps'
   };
 }
 
-function projectedWeight(startLb, weeks, deficitPerWeek) {
-  // ~3,500 kcal per lb of fat, tempered because you will add some lean mass.
-  const fatLost = (deficitPerWeek * weeks) / 3500;
-  const leanGained = weeks * 0.09; // realistic recomp rate for a trained athlete
-  return +(startLb - fatLost + leanGained).toFixed(1);
+function projectedWeight(startLb, weeks, ratePerWeek) {
+  return +(startLb + ratePerWeek * weeks).toFixed(1);
+}
+
+/** Weeks to go from here to a goal weight at the planned rate. */
+function weeksToGoal(currentLb, goalLb, ratePerWeek) {
+  if (!ratePerWeek) return null;
+  const w = (goalLb - currentLb) / ratePerWeek;
+  return w > 0 ? Math.ceil(w) : 0;
+}
+
+/**
+ * Compare measured rate of gain against the plan and say what to do about it.
+ * This is the whole reason to weigh yourself — a surplus you never check is
+ * just a guess.
+ */
+function surplusAdvice(measuredRate, targetRate) {
+  if (measuredRate == null) {
+    return {
+      status: 'unknown', tone: 'neutral',
+      headline: 'Not enough weigh-ins yet',
+      detail: 'Log your bodyweight at least three times a week for two weeks and the app will tell you whether the surplus is right.'
+    };
+  }
+  if (!targetRate) {
+    return {
+      status: 'ok', tone: 'good',
+      headline: `Holding at ${measuredRate >= 0 ? '+' : ''}${measuredRate.toFixed(2)} lb/wk`,
+      detail: 'You are maintaining. Nothing to change.'
+    };
+  }
+
+  const ratio = measuredRate / targetRate;
+  if (ratio < 0.4) {
+    return {
+      status: 'under', tone: 'warn', kcalDelta: 250,
+      headline: `Gaining too slowly — ${measuredRate.toFixed(2)} lb/wk vs ${targetRate} target`,
+      detail: 'Add about 250 calories to your training days, most easily as carbs around your session. Recheck in two weeks.'
+    };
+  }
+  if (ratio > 1.8) {
+    return {
+      status: 'over', tone: 'warn', kcalDelta: -250,
+      headline: `Gaining too fast — ${measuredRate.toFixed(2)} lb/wk vs ${targetRate} target`,
+      detail: 'Past about double the target rate, the extra is mostly fat. Take roughly 250 calories back out and recheck in two weeks.'
+    };
+  }
+  return {
+    status: 'ok', tone: 'good',
+    headline: `On track at ${measuredRate.toFixed(2)} lb/wk`,
+    detail: 'This is exactly the rate you want. Do not change anything.'
+  };
 }
 
 const RULES = [
   {
-    t: 'Protein at every meal',
-    d: 'Four feedings of 45-55 g beats two of 100 g. Hit the number, spread it out, and the weight you lose comes off fat instead of the legs you jump with.'
+    t: 'Eat on a schedule, not on hunger',
+    d: 'The hardest part of gaining is that a surplus stops feeling like one after two weeks. Four or five planned feedings beat waiting until you feel like eating — by block 3 you will not feel like it.'
   },
   {
-    t: 'Carbs are performance, not the enemy',
-    d: 'A max approach jump runs almost entirely on stored glycogen. Cutting carbs is the fastest way to feel flat on the court. Keep them high — especially around training.'
+    t: 'Protein every 3-4 hours',
+    d: 'Four feedings of 45-55 g beats two of 100 g. Total matters most, but spreading it out is what turns the surplus into muscle instead of just weight.'
   },
   {
-    t: 'Front-load the day, fuel the session',
-    d: '40-60 g of carbs and 30 g of protein in the 90 minutes before you train. Another 60-80 g of carbs plus 40 g of protein inside an hour after. The rest fills in around it.'
+    t: 'Carbs are the cheap part of the surplus',
+    d: 'They fuel the training that causes the growth, and they are far easier to eat in volume than fat or protein. Rice, oats, potatoes, pasta, fruit — this is where the extra calories should come from.'
   },
   {
-    t: 'Rest days carry the deficit',
-    d: 'On non-training days you do not need the fuel, so that is where the calories come out. Training days stay near maintenance so performance never dips.'
+    t: 'Drink some of it',
+    d: 'When solid food stops going down, a shake with milk, oats, banana and peanut butter is 700 calories in two minutes. This is the single most useful trick for gaining.'
+  },
+  {
+    t: 'Fuel the session properly',
+    d: '60-80 g of carbs and 30 g of protein in the 90 minutes before you train, and another 80-100 g of carbs plus 40 g protein within an hour after. You are training six days a week now.'
   },
   {
     t: 'Half a pound a week, no faster',
-    d: 'Aggressive cuts cost you vertical inches and invite injury. At this rate you will be visibly leaner by week 8 and still setting PRs in week 16.'
+    d: 'Past about a pound a week the extra is mostly fat, and you will spend three months dieting it off. Slow is the whole strategy — it is the difference between 200 lb lean and 205 lb soft.'
   },
   {
-    t: 'Weigh yourself the same way every time',
-    d: 'Morning, after the bathroom, before food. Track the 7-day average and ignore any single day — daily swings of 3-4 lb are water, not fat.'
+    t: 'The tape tells the truth, the scale does not',
+    d: 'Weight going up only tells you the surplus works. Arm, chest and thigh climbing while the waist stays flat tells you it is working correctly. Measure every two weeks, cold.'
   },
   {
-    t: 'Sleep is the whole game',
-    d: '8 hours minimum, 9 in the power block. Under 7 hours and your reaction time, jump height, and injury risk all measurably get worse. No supplement comes close.'
+    t: 'Watch the Wednesday jump numbers',
+    d: 'If your approach jump starts dropping and you are eating and sleeping enough, you are accumulating fatigue, not muscle. Take the deload seriously.'
   },
   {
-    t: 'Hydrate before you are thirsty',
-    d: 'Roughly 0.6 oz per pound of bodyweight as a floor, plus 20-30 oz per hour of court time. Add salt. Dehydration of just 2% bodyweight drops power output.'
+    t: 'Sleep is where the muscle is built',
+    d: 'Eight hours minimum, nine if you can. Chronic short sleep in a surplus shifts the ratio of what you gain toward fat, independent of your calories.'
   }
 ];
 
 const SUPPLEMENTS = [
-  { n: 'Creatine monohydrate', d: '5 g daily, timing irrelevant. The single best-evidenced legal ergogenic for power athletes. Cheap. Take it.', tier: 'Worth it' },
-  { n: 'Whey or casein protein', d: 'Not magic — just a convenient way to hit 190 g without eating six chicken breasts.', tier: 'Worth it' },
+  { n: 'Creatine monohydrate', d: '5 g daily, timing irrelevant. Best-evidenced legal supplement there is, and it works even better in a surplus. Cheap. Take it.', tier: 'Worth it' },
+  { n: 'Whey protein', d: 'Not magic — just the easiest way to hit 190 g a day while also eating 500 g of carbs.', tier: 'Worth it' },
+  { n: 'Liquid carbs (maltodextrin or dextrose)', d: 'If you genuinely cannot eat enough, carbs you can drink around training are the least unpleasant way to close the gap.', tier: 'Situational' },
   { n: 'Vitamin D3 + K2', d: '2,000-4,000 IU if you train indoors. Low D is linked to worse muscle function and more injuries.', tier: 'Worth it' },
-  { n: 'Caffeine', d: '3-6 mg/kg roughly 45 min pre-session. Real effect on power output. Skip it before evening sessions or your sleep pays.', tier: 'Situational' },
-  { n: 'Collagen + vitamin C', d: '15 g with 50 mg vitamin C about 45 min before jump sessions. Evidence is early but promising for tendon.', tier: 'Situational' },
-  { n: 'Tart cherry / beetroot', d: 'Modest recovery and endurance effects. Fine during tournaments, not worth a monthly subscription.', tier: 'Situational' },
-  { n: 'Fat burners, BCAAs, testosterone boosters', d: 'You already eat enough protein for BCAAs to be pointless, and the rest do not work. Spend the money on food.', tier: 'Skip' }
+  { n: 'Caffeine', d: '3-6 mg/kg about 45 min pre-session. Real effect on output. Skip it before evening sessions or your sleep — and your gains — pay for it.', tier: 'Situational' },
+  { n: 'Collagen + vitamin C', d: '15 g with 50 mg vitamin C about 45 min before jump sessions. Early but promising evidence for tendon health.', tier: 'Situational' },
+  { n: 'Fat burners, BCAAs, testosterone boosters, mass gainers', d: 'BCAAs are pointless at your protein intake, the rest do not work, and "mass gainer" is sugar at four times the price of oats. Spend it on food.', tier: 'Skip' }
 ];
 
 const MEAL_TEMPLATE = [
   {
-    when: 'Breakfast', kcal: '~750',
-    what: '4 whole eggs + 3 egg whites, 1 cup oats with berries, black coffee.',
-    macro: '50 g protein / 80 g carb / 22 g fat'
+    when: 'Breakfast', kcal: '~850',
+    what: '4 whole eggs + 3 whites, 1.5 cups oats with berries and honey, glass of whole milk.',
+    macro: '52 g protein / 105 g carb / 26 g fat'
   },
   {
-    when: 'Pre-training', kcal: '~400',
-    what: 'Greek yogurt, banana, honey, handful of rice cakes.',
-    macro: '30 g protein / 65 g carb / 4 g fat'
+    when: 'Mid-morning', kcal: '~450',
+    what: 'Greek yogurt, granola, banana. Or the shake if you are short on time.',
+    macro: '30 g protein / 60 g carb / 8 g fat'
   },
   {
-    when: 'Post-training', kcal: '~600',
-    what: '8 oz chicken or lean beef, 1.5 cups white rice, veg, salt generously.',
-    macro: '55 g protein / 75 g carb / 12 g fat'
+    when: 'Pre-training', kcal: '~450',
+    what: 'Rice cakes with honey, banana, whey shake.',
+    macro: '30 g protein / 75 g carb / 4 g fat'
   },
   {
-    when: 'Dinner', kcal: '~800',
+    when: 'Post-training', kcal: '~750',
+    what: '8 oz chicken or lean beef, 2 cups white rice, veg, salt generously.',
+    macro: '58 g protein / 100 g carb / 14 g fat'
+  },
+  {
+    when: 'Dinner', kcal: '~850',
     what: '8 oz salmon or steak, large potato or pasta, big salad with olive oil.',
-    macro: '50 g protein / 85 g carb / 28 g fat'
+    macro: '52 g protein / 90 g carb / 30 g fat'
   },
   {
-    when: 'Before bed', kcal: '~350',
-    what: 'Cottage cheese or casein shake, peanut butter, handful of fruit.',
-    macro: '40 g protein / 25 g carb / 12 g fat'
+    when: 'Before bed', kcal: '~450',
+    what: 'Cottage cheese or casein, peanut butter, handful of fruit.',
+    macro: '42 g protein / 35 g carb / 16 g fat'
   }
 ];
 
-return { computeTargets, projectedWeight, RULES, SUPPLEMENTS, MEAL_TEMPLATE };
+/** The gaining-phase shake, because it is the difference between hitting the number and not. */
+const SHAKE = {
+  name: 'The 800-calorie shake',
+  items: ['500 ml whole milk', '1 scoop whey', '80 g oats', '1 banana', '2 tbsp peanut butter', 'pinch of salt'],
+  macro: '~55 g protein / 90 g carb / 28 g fat · about 800 kcal',
+  note: 'Blend it, drink it between meals on days the food will not go down. Half a shake still counts.'
+};
+
+return { computeTargets, projectedWeight, weeksToGoal, surplusAdvice, GOALS, RULES, SUPPLEMENTS, MEAL_TEMPLATE, SHAKE };
 });
 
 __def('ui', function () {
@@ -2662,6 +3040,8 @@ const DEFAULTS = () => ({
     weightLb: 190,
     age: 28,
     activity: 1.7,
+    goal: 'leanGain',
+    goalWeight: 200,
     startDate: todayISO()
   },
   maxes: {
@@ -2800,6 +3180,51 @@ function warmupRamp(target, inc = 5) {
   return steps
     .map(st => ({ weight: roundPlate(target * st.pct, inc), reps: st.reps }))
     .filter(st => st.weight < target - inc);
+}
+
+/**
+ * Percentage of 1RM you can move for a given number of reps at RPE 10,
+ * i.e. taken to genuine failure. Standard reps-in-reserve chart.
+ */
+const RPE10_PCT = {
+  1: 1.00, 2: 0.955, 3: 0.922, 4: 0.892, 5: 0.863, 6: 0.837,
+  7: 0.811, 8: 0.786, 9: 0.762, 10: 0.74, 11: 0.72, 12: 0.70,
+  13: 0.685, 14: 0.667, 15: 0.65, 16: 0.64, 17: 0.63, 18: 0.62, 20: 0.60
+};
+
+/** Each RPE point below failure costs roughly this much of your 1RM. */
+const PER_RPE = 0.025;
+
+function repsFromPrescription(reps) {
+  if (typeof reps === 'number') return reps;
+  const nums = String(reps ?? '').match(/\d+/g);
+  if (!nums) return null;
+  // "8-10" — aim at the top of the range, which is what the set should feel like.
+  return Math.max(...nums.map(Number));
+}
+
+/**
+ * Starting weight for an autoregulated lift with no logged history, derived
+ * from the tested max via the RPE chart. Only possible for movements that
+ * reference a max; a cable fly has no 1RM to work from.
+ */
+function rpeLoadEstimate(item, wib) {
+  const s = get();
+  const ref = refFor(item);
+  if (!ref) return null;
+  const max = s.maxes[ref];
+  if (!max) return null;
+
+  const reps = repsFromPrescription(atWeek(item.reps, wib));
+  const rpe = atWeek(item.rpe, wib);
+  if (!reps || !rpe) return null;
+
+  const keys = Object.keys(RPE10_PCT).map(Number);
+  const nearest = keys.reduce((a, b) => (Math.abs(b - reps) < Math.abs(a - reps) ? b : a));
+  const pct = RPE10_PCT[nearest] - (10 - rpe) * PER_RPE;
+  if (pct <= 0) return null;
+
+  return { weight: roundPlate(max * pct, s.prefs.plateInc), pct, reps, rpe };
 }
 
 /* -------------------------------------------------------------- SESSION LOG */
@@ -2960,6 +3385,45 @@ function metricAvg(key, n = 7) {
   return +(arr.reduce((a, p) => a + p.v, 0) / arr.length).toFixed(1);
 }
 
+/**
+ * Least-squares trend through recent bodyweight entries, in lb/week.
+ *
+ * Day-to-day bodyweight swings 3-4 lb on water alone, so a single pair of
+ * weigh-ins says nothing. This needs a real span and several points before it
+ * will commit to a number.
+ */
+function weightTrend(days = 28) {
+  const arr = metricSeries('bodyweight');
+  if (arr.length < 3) return null;
+
+  const cutoff = Date.now() - days * 86400000;
+  const pts = arr
+    .map(p => ({ t: Date.parse(p.d), v: p.v }))
+    .filter(p => Number.isFinite(p.t) && p.t >= cutoff);
+  if (pts.length < 3) return null;
+
+  const t0 = pts[0].t;
+  const xs = pts.map(p => (p.t - t0) / 86400000);
+  const ys = pts.map(p => p.v);
+  const spanDays = xs[xs.length - 1];
+  if (spanDays < 10) return null; // too short a window to mean anything
+
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+  let num = 0, den = 0;
+  for (let k = 0; k < xs.length; k++) {
+    num += (xs[k] - mx) * (ys[k] - my);
+    den += (xs[k] - mx) ** 2;
+  }
+  if (!den) return null;
+
+  return {
+    perWeek: +((num / den) * 7).toFixed(2),
+    n: pts.length,
+    spanDays: Math.round(spanDays)
+  };
+}
+
 /* -------------------------------------------------------------- PROGRESS */
 
 function weekProgress(week) {
@@ -3099,7 +3563,7 @@ function blockInfo() {
   return { block: blockForWeek(w), wib: weekInBlock(w), week: w };
 }
 
-return { todayISO, load, get, save, subscribe, update, exportJSON, importJSON, resetAll, e1rm, roundPlate, targetLoad, warmupRamp, logKey, getLog, ensureLog, setKeyFor, logSet, clearSet, finishSession, reopenSession, lastLoadFor, suggestLoad, staleMaxes, applyMax, logMetric, deleteMetric, metricSeries, latestMetric, firstMetric, metricAvg, weekProgress, overallProgress, streak, adherence, totalTonnage, tonnageByWeek, e1rmSeries, currentWeek, setWeek, todayDayIndex, suggestedDay, maybeAdvanceWeek, blockInfo };
+return { todayISO, load, get, save, subscribe, update, exportJSON, importJSON, resetAll, e1rm, roundPlate, targetLoad, warmupRamp, rpeLoadEstimate, logKey, getLog, ensureLog, setKeyFor, logSet, clearSet, finishSession, reopenSession, lastLoadFor, suggestLoad, staleMaxes, applyMax, logMetric, deleteMetric, metricSeries, latestMetric, firstMetric, metricAvg, weightTrend, weekProgress, overallProgress, streak, adherence, totalTonnage, tonnageByWeek, e1rmSeries, currentWeek, setWeek, todayDayIndex, suggestedDay, maybeAdvanceWeek, blockInfo };
 });
 
 __def('today', function () {
@@ -3224,6 +3688,14 @@ function isSupportSection(name) {
   return /prep|recovery|down-regulate|flow|tissue/i.test(name);
 }
 
+/**
+ * Warm-ups, armor and durability work do not need load guidance — you are not
+ * chasing a number on a band pull-apart.
+ */
+function wantsLoadGuidance(name) {
+  return !/prep|armor|durability|recovery|flow|tissue|spring|aerobic/i.test(name);
+}
+
 function countSets(session, wib) {
   let n = 0;
   for (const sec of session.sections) {
@@ -3279,6 +3751,9 @@ function exerciseCard(item, idx, ctx, sec) {
   const reps = atWeek(item.reps, wib);
   const rpe = atWeek(item.rpe, wib);
   const target = store.targetLoad(item, wib);
+  // Whatever weight the check-off button should pre-fill: the percentage
+  // target, or failing that whatever the app suggested or estimated.
+  let fallbackWeight = target;
   const isVariant = sec.notes && /pick one/i.test(sec.notes);
   const variantOff = isVariant && isSuppressedVariant(item.ex);
 
@@ -3323,9 +3798,10 @@ function exerciseCard(item, idx, ctx, sec) {
         ) : null
       )
     );
-  } else if (rpe && def.loadType === 'rpe') {
+  } else if (rpe && wantsLoadGuidance(sec.name)) {
     const sug = store.suggestLoad(item, item.ex, week, day);
     if (sug) {
+      fallbackWeight = sug.suggested;
       card.append(
         h('div', { class: 'loadbar loadbar--sug' },
           h('div', { class: 'loadbar-main' },
@@ -3335,6 +3811,28 @@ function exerciseCard(item, idx, ctx, sec) {
           h('span', { class: 'loadbar-hint', text: `last time ${sug.last.w} lb × ${sug.last.r || '?'}${sug.last.rpe ? ` @ RPE ${sug.last.rpe}` : ''}` })
         )
       );
+    } else {
+      // No history yet. Estimate from the tested max where the movement has
+      // one, and otherwise say plainly how to pick the first weight.
+      const est = store.rpeLoadEstimate(item, wib);
+      if (est) {
+        fallbackWeight = est.weight;
+        card.append(
+          h('div', { class: 'loadbar loadbar--est' },
+            h('div', { class: 'loadbar-main' },
+              h('span', { class: 'loadbar-num', text: `${est.weight}` }),
+              h('span', { class: 'loadbar-unit', text: 'lb' })
+            ),
+            h('span', { class: 'loadbar-hint', text: `estimated start · ${Math.round(est.pct * 100)}% of your max for ${est.reps} @ RPE ${est.rpe}` })
+          )
+        );
+      } else {
+        card.append(
+          h('div', { class: 'loadbar loadbar--first' },
+            h('span', { class: 'loadbar-hint', text: `First time: pick a weight you could do about ${reps} reps with, stopping ${rpeGap(rpe)}. Log it and the app takes over from here.` })
+          )
+        );
+      }
     }
   }
 
@@ -3349,7 +3847,7 @@ function exerciseCard(item, idx, ctx, sec) {
   const rowCount = support ? 1 : sets;
   for (let n = 1; n <= rowCount; n++) {
     rows.append(setRow({
-      item, def, n, idx, target, reps, rpe, needsLoad, ctx,
+      item, def, n, idx, target: fallbackWeight, reps, rpe, needsLoad, ctx,
       staticText: support ? (sets > 1 ? `${sets} × ${reps}` : String(reps || 'done')) : null
     }));
   }
@@ -3363,6 +3861,25 @@ function exerciseCard(item, idx, ctx, sec) {
   }
 
   return card;
+}
+
+/**
+ * The rep number to aim at. For a range like "8-10" that is the top — it is
+ * what the suggested load was calculated for.
+ */
+function repsTarget(reps) {
+  if (typeof reps === 'number') return reps;
+  const nums = String(reps ?? '').match(/\d+/g);
+  return nums ? Math.max(...nums.map(Number)) : null;
+}
+
+/** Plain-English rendering of an RPE target. */
+function rpeGap(rpe) {
+  const left = Math.max(0, Math.round((10 - rpe) * 10) / 10);
+  if (left <= 0.5) return 'at genuine failure';
+  if (left <= 1) return 'with 1 rep left in the tank';
+  if (left <= 2) return `with about ${Math.round(left)} reps left in the tank`;
+  return `well short of failure (about ${Math.round(left)} reps left)`;
 }
 
 function isSuppressedVariant(exId) {
@@ -3391,8 +3908,9 @@ function setRow({ item, def, n, idx, target, reps, rpe, needsLoad, ctx, staticTe
     'aria-label': 'Weight',
     oninput: e => store.logSet(week, day, key, { w: num(e.target.value) })
   });
+  const repTgt = repsTarget(reps);
   const rIn = numberInput({
-    placeholder: typeof reps === 'number' ? String(reps) : String(reps || '').replace(/[^\d]/g, '') || '—',
+    placeholder: repTgt != null ? String(repTgt) : '—',
     value: data.r ?? '',
     'aria-label': 'Reps',
     oninput: e => store.logSet(week, day, key, { r: num(e.target.value) })
@@ -3419,9 +3937,8 @@ function setRow({ item, def, n, idx, target, reps, rpe, needsLoad, ctx, staticTe
         const patch = { done: nowDone };
         if (nowDone) {
           if (needsLoad && !wIn.value && target) { patch.w = target; wIn.value = target; }
-          if (needsLoad && !rIn.value) {
-            const r = typeof reps === 'number' ? reps : parseInt(String(reps).match(/\d+/)?.[0] || '', 10);
-            if (r) { patch.r = r; rIn.value = r; }
+          if (needsLoad && !rIn.value && repTgt != null) {
+            patch.r = repTgt; rIn.value = repTgt;
           }
         }
         store.logSet(week, day, key, patch);
@@ -3584,7 +4101,7 @@ __def('plan', function () {
 const { h, clear, ring, sheet } = __req('ui');
 const store = __req('store');
 const {
-  BLOCKS, TOTAL_WEEKS, weekSessions, dayLabel, weekInBlock, isDeloadWeek, isTestWeek,
+  BLOCKS, PHASES, TOTAL_WEEKS, weekSessions, dayLabel, weekInBlock, isDeloadWeek, isTestWeek,
   sessionMinutes, blockForWeek, TEST_DAY_A, TEST_DAY_B
 } = __req('program');
 const { setTarget } = __req('today');
@@ -3604,8 +4121,8 @@ function render(root, nav) {
     h('header', { class: 'hdr' },
       h('div', { class: 'hdr-top' },
         h('div', null,
-          h('h1', { class: 'hdr-title', text: 'Above the Net' }),
-          h('p', { class: 'hdr-sub', text: `16-week block plan · ${overall.done} of ${overall.total} sessions logged` })
+          h('h1', { class: 'hdr-title', text: 'Frame' }),
+          h('p', { class: 'hdr-sub', text: `${TOTAL_WEEKS}-week lean-mass plan · ${overall.done} of ${overall.total} sessions logged` })
         ),
         h('div', { class: 'hdr-ring' },
           ring(overall.pct, { size: 60, stroke: 5, label: `${overall.pct}` }),
@@ -3622,7 +4139,17 @@ function render(root, nav) {
   body.append(
     h('div', { class: 'card card--brief' },
       h('p', { class: 'focus', text: 'The plan in one paragraph' }),
-      h('p', { class: 'brief', text: 'Four four-week blocks, each one building on the last. You start by making your tissue tolerant, then you get strong, then you teach that strength to move fast, then you sharpen it and test it. Every block loads for three weeks and unloads on the fourth, which is where the adaptation actually shows up. Week 16 re-runs the same measurements as week 0 so the progress is a number, not a feeling.' })
+      h('p', { class: 'brief', text: 'Six four-week blocks that take you from 190 to a lean 200. Volume builds the muscle in the first phase, load raises the ceiling in the second, and the third pushes both before a taper and a full retest. Every block loads for three weeks and unloads on the fourth. A Wednesday jump session runs the whole way through so the ten pounds you add makes you a better athlete rather than a heavier one.' })
+    ),
+    h('div', { class: 'card' },
+      h('h2', { class: 'sect-title', text: 'Three phases' }),
+      h('div', { class: 'phaserow' },
+        PHASES.map(ph => h('div', { class: 'phase' },
+          h('span', { class: 'phase-weeks', text: `Weeks ${ph.weeks}` }),
+          h('strong', { class: 'phase-name', text: ph.name }),
+          h('span', { class: 'phase-detail', text: ph.detail })
+        ))
+      )
     )
   );
 
@@ -3702,7 +4229,7 @@ function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'The test battery' }),
-      h('p', { class: 'muted', text: 'Run this before week 1 to set your baseline, again after week 8, and again in week 16. Same order, same conditions, every time — otherwise the numbers are noise.' }),
+      h('p', { class: 'muted', text: 'Run this before week 1 to set your baseline, then again at weeks 8, 16 and 24. Same order, same conditions, every time — otherwise the numbers are noise.' }),
       h('div', { class: 'stack-sm' },
         [TEST_DAY_A, TEST_DAY_B].map(t => h('button', {
           class: 'rowbtn',
@@ -3761,15 +4288,17 @@ function showBaselineGuide() {
 }
 
 const PRINCIPLES = [
-  { t: 'Jumps come first, always', d: 'Plyometrics and max jumps go at the front of a session while your nervous system is fresh. A tired jump trains you to jump tired.' },
-  { t: 'Quality is the rep target', d: 'On any jump or sprint, the set ends when output drops — not when you hit the prescribed number. Chasing reps on power work makes you slower.' },
-  { t: 'Never skip the durability block', d: 'The five minutes of calves, tibs, adductors and cuff work at the end of each session is what keeps you on the court. It is the least fun and the most important part.' },
-  { t: 'Two hard days on the court, not five', d: 'This program assumes 2-3 volleyball sessions a week. If you play more, drop the Wednesday conditioning and cut the Saturday finisher first.' },
-  { t: 'Deload weeks are not optional', d: 'Week 4 of each block is where the previous three weeks actually turn into adaptation. Skipping it is how people plateau in week 9.' },
-  { t: 'Log every set', d: 'The app cannot suggest loads it has never seen. Thirty seconds of logging is what turns this from a workout list into a program that progresses.' },
-  { t: 'Something hurts — change it, do not push it', d: 'Sharp joint pain means swap the movement, not tough it out. Tendon soreness that fades in the warm-up is fine; pain that gets worse as you go is not.' },
-  { t: 'Sleep is part of the program', d: 'Eight hours minimum. Below seven, your jump height, reaction time, and injury risk all get measurably worse and no amount of training makes up for it.' }
+  { t: 'Progressive overload is the whole program', d: 'Every session, try to beat the log — one more rep, or five more pounds at the same reps. Muscle grows in response to doing more than last time, and nothing else in this plan matters as much.' },
+  { t: 'Take the last set close to failure', d: 'On isolation work, the final set should have nothing left in it. On the big compounds, leave one or two reps — a missed squat costs more than the extra rep is worth.' },
+  { t: 'Full range beats heavy partials', d: 'You have long limbs, which means long ranges of motion and more growth per rep. Load what you can control all the way down, not what looks impressive at the top.' },
+  { t: 'Eat like it is part of training', d: 'You cannot build ten pounds of muscle out of nothing. Missing the surplus for a week undoes that week of training more thoroughly than skipping a session would.' },
+  { t: 'Jumps stay in — every week', d: 'The Wednesday session is short and never gets cut. It is the difference between adding athletic weight and just getting heavier.' },
+  { t: 'Deload weeks are not optional', d: 'Week 4 of each block is where the previous three weeks turn into muscle. Skipping it is how people stall in block 3 and quit in block 5.' },
+  { t: 'Log every set', d: 'Beating the log is only possible if there is a log. Thirty seconds of typing is what turns this from a workout list into a program that progresses.' },
+  { t: 'Drop the Pump day, never the main five', d: 'When the week gets busy or the court took a lot out of you, Saturday is what goes. The five main sessions are the program.' },
+  { t: 'Sleep eight hours', d: 'In a surplus, short sleep shifts what you gain toward fat regardless of your macros. It is the cheapest anabolic available and the easiest to waste.' }
 ];
+
 
 return { render };
 });
@@ -3777,8 +4306,8 @@ return { render };
 __def('progress', function () {
 const { h, clear, lineChart, barChart, ring, sparkline, numberInput, toast, sheet, fmtNum, fmtDate } = __req('ui');
 const store = __req('store');
-const { METRICS, MAX_LIFTS, TOTAL_WEEKS, blockForWeek } = __req('program');
-const { computeTargets, projectedWeight } = __req('nutrition');
+const { METRICS, MAX_LIFTS, TOTAL_WEEKS, blockForWeek, weeklySetsByPattern } = __req('program');
+const { computeTargets, projectedWeight, weeksToGoal, surplusAdvice } = __req('nutrition');
 
 const KEY_LIFTS = [
   { ex: 'back_squat', ref: 'squat', name: 'Back Squat' },
@@ -3787,13 +4316,21 @@ const KEY_LIFTS = [
   { ex: 'ohp', ref: 'ohp', name: 'Overhead Press' }
 ];
 
-const HERO_METRICS = ['approach', 'block', 'broad', 'agility'];
+const SIZE_METRICS = ['waist', 'chest', 'arm', 'thigh'];
+const ATHLETIC_METRICS = ['approach', 'block', 'broad', 'agility'];
+
+const PATTERN_LABELS = {
+  squat: 'Squat', hinge: 'Hinge', push: 'Push', pull: 'Pull',
+  lunge: 'Lunge', calf: 'Calves', core: 'Core', plyo: 'Jumps', cod: 'Agility'
+};
 
 function render(root, nav) {
   clear(root);
   const cw = store.currentWeek();
   root.style.setProperty('--accent', blockForWeek(cw).color);
 
+  const profile = store.get().profile;
+  const t = computeTargets(profile);
   const st = store.streak();
   const adh = store.adherence();
   const overall = store.overallProgress();
@@ -3822,36 +4359,30 @@ function render(root, nav) {
     )
   );
 
-  /* -------------------------------------------------------- headline jump */
-  const approach = store.metricSeries('approach');
-  const first = approach[0], last = approach[approach.length - 1];
-  if (approach.length) {
-    const delta = last.v - first.v;
-    body.append(
-      h('div', { class: 'card card--hero' },
-        h('span', { class: 'hero-cap', text: 'Approach jump' }),
-        h('div', { class: 'hero-row' },
-          h('span', { class: 'hero-num', text: `${last.v}` }),
-          h('span', { class: 'hero-unit', text: 'in' }),
-          approach.length > 1 ? h('span', {
-            class: `hero-delta ${delta >= 0 ? 'up' : 'down'}`,
-            text: `${delta >= 0 ? '+' : ''}${delta.toFixed(1)} since week 1`
-          }) : null
-        ),
-        lineChart(approach.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 130, yUnit: '"' })
-      )
-    );
-  }
+  /* --------------------------------------------------- headline: bodyweight */
+  body.append(bodyweightHero(profile, t));
 
   /* ------------------------------------------------------- log a metric */
   body.append(logCard(root, nav));
 
-  /* ---------------------------------------------------- performance grid */
+  /* -------------------------------------------------------- measurements */
   body.append(
     h('div', { class: 'card' },
-      h('h2', { class: 'sect-title', text: 'Athletic tests' }),
+      h('h2', { class: 'sect-title', text: 'The tape' }),
+      h('p', { class: 'muted', text: 'The number that matters is the ratio between these. Chest, arm and thigh climbing while the waist holds flat is a clean gain — measure cold, every two weeks.' }),
+      h('div', { class: 'measuregrid' },
+        SIZE_METRICS.map(k => metricTile(k, root, nav))
+      )
+    )
+  );
+
+  /* ---------------------------------------------------- athletic retention */
+  body.append(
+    h('div', { class: 'card' },
+      h('h2', { class: 'sect-title', text: 'Still an athlete?' }),
+      h('p', { class: 'muted', text: 'These are the guardrails on the gaining phase. Holding them steady while you add 10 lb means the weight is muscle; watching them slide means it is not.' }),
       h('div', { class: 'metricgrid' },
-        HERO_METRICS.map(k => metricTile(k, root, nav))
+        ATHLETIC_METRICS.map(k => metricTile(k, root, nav))
       )
     )
   );
@@ -3860,7 +4391,7 @@ function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'Estimated 1RM' }),
-      h('p', { class: 'muted', text: 'Calculated from every set you log, so it moves without you having to test.' }),
+      h('p', { class: 'muted', text: 'Calculated from every set you log. On a gaining phase these should climb steadily — muscle you cannot load eventually stops growing.' }),
       h('div', { class: 'stack-sm' },
         KEY_LIFTS.map(l => {
           const series = store.e1rmSeries(l.ex);
@@ -3872,7 +4403,7 @@ function render(root, nav) {
               h('span', { class: 'liftrow-sub', text: best ? `best logged e1RM ${best} lb` : 'no sets logged yet' })
             ),
             series.length > 1
-              ? sparkline(series.map(p => p.v), blockForWeek(store.currentWeek()).color)
+              ? sparkline(series.map(p => p.v), blockForWeek(cw).color)
               : h('span', { class: 'spark-empty', text: '—' }),
             h('span', { class: 'liftrow-val', text: `${cur}` })
           );
@@ -3881,33 +4412,21 @@ function render(root, nav) {
     )
   );
 
-  /* ----------------------------------------------------------- body comp */
-  const bw = store.metricSeries('bodyweight');
-  const waist = store.metricSeries('waist');
-  const targets = computeTargets(store.get().profile);
-  body.append(
-    h('div', { class: 'card' },
-      h('h2', { class: 'sect-title', text: 'Body composition' }),
-      bw.length
-        ? h('div', null,
-            h('div', { class: 'bc-row' },
-              h('div', null,
-                h('span', { class: 'bc-num', text: `${bw[bw.length - 1].v}` }),
-                h('span', { class: 'bc-unit', text: 'lb' }),
-                h('span', { class: 'bc-cap', text: `7-entry avg ${store.metricAvg('bodyweight', 7)} lb` })
-              ),
-              waist.length ? h('div', null,
-                h('span', { class: 'bc-num', text: `${waist[waist.length - 1].v}` }),
-                h('span', { class: 'bc-unit', text: 'in' }),
-                h('span', { class: 'bc-cap', text: 'waist' })
-              ) : null
-            ),
-            lineChart(bw.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 120, target: 181, yUnit: ' lb' })
-          )
-        : h('p', { class: 'muted', text: 'Log your weight to see the trend. Same time, same conditions, every time.' }),
-      h('p', { class: 'note-inline', text: `Projection at the current plan: about ${projectedWeight(store.get().profile.weightLb, 16, targets.deficitPerWeek)} lb by week 16, with strength holding or climbing. Weight will barely move some weeks — watch the waist and the photos instead.` })
-    )
-  );
+  /* --------------------------------------------------- weekly hard sets */
+  const patterns = weeklySetsByPattern(cw);
+  const patternRows = Object.entries(patterns)
+    .filter(([p]) => PATTERN_LABELS[p])
+    .sort((a, b) => b[1] - a[1])
+    .map(([p, v]) => ({ label: PATTERN_LABELS[p], v, display: `${v} sets` }));
+  if (patternRows.length) {
+    body.append(
+      h('div', { class: 'card' },
+        h('h2', { class: 'sect-title', text: `Week ${cw} hard sets` }),
+        h('p', { class: 'muted', text: 'Weekly set count per movement pattern — the number that actually drives growth. Ten to twenty per pattern is the productive range; the optional Pump day and the warm-up work are not counted.' }),
+        barChart(patternRows)
+      )
+    );
+  }
 
   /* ------------------------------------------------------------- volume */
   const byWeek = store.tonnageByWeek();
@@ -3916,7 +4435,7 @@ function render(root, nav) {
     body.append(
       h('div', { class: 'card' },
         h('h2', { class: 'sect-title', text: 'Weekly tonnage' }),
-        h('p', { class: 'muted', text: 'Total weight moved. Expect this to dip on deload weeks — that is the plan working.' }),
+        h('p', { class: 'muted', text: 'Total weight moved. Expect this to dip on every fourth week — that is the deload working.' }),
         barChart(weeks.map(w => ({ label: `Wk ${w}`, v: byWeek[w], display: `${fmtNum(byWeek[w])} lb` })))
       )
     );
@@ -3947,6 +4466,48 @@ function render(root, nav) {
   body.append(h('div', { class: 'spacer' }));
 }
 
+/* ----------------------------------------------------------------- pieces */
+
+function bodyweightHero(profile, t) {
+  const bw = store.metricSeries('bodyweight');
+  const trend = store.weightTrend(28);
+  const goalW = profile.goalWeight;
+
+  if (!bw.length) {
+    return h('div', { class: 'card card--hero' },
+      h('span', { class: 'hero-cap', text: 'Body weight' }),
+      h('p', { class: 'muted', text: `Log your weight below to start tracking. Target is ${goalW} lb, and the app will tell you whether you are getting there at the right speed.` })
+    );
+  }
+
+  const last = bw[bw.length - 1];
+  const first = bw[0];
+  const gained = last.v - first.v;
+  const avg = store.metricAvg('bodyweight', 7);
+  const toGo = goalW ? +(goalW - last.v).toFixed(1) : null;
+  const advice = surplusAdvice(trend ? trend.perWeek : null, t.targetRate);
+
+  return h('div', { class: 'card card--hero' },
+    h('span', { class: 'hero-cap', text: `Body weight — target ${goalW} lb` }),
+    h('div', { class: 'hero-row' },
+      h('span', { class: 'hero-num', text: `${last.v}` }),
+      h('span', { class: 'hero-unit', text: 'lb' }),
+      bw.length > 1 ? h('span', {
+        class: `hero-delta ${gained >= 0 ? 'up' : 'down'}`,
+        text: `${gained >= 0 ? '+' : ''}${gained.toFixed(1)} since week 1`
+      }) : null
+    ),
+    h('div', { class: 'kvlist' },
+      avg ? kv('7-entry average', `${avg} lb`) : null,
+      trend ? kv('Current rate', `${trend.perWeek >= 0 ? '+' : ''}${trend.perWeek} lb / week (target ${t.targetRate > 0 ? '+' : ''}${t.targetRate})`) : null,
+      toGo != null && toGo > 0 ? kv('To go', `${toGo} lb · about ${weeksToGoal(last.v, goalW, t.targetRate) ?? '—'} weeks`) : null,
+      toGo != null && toGo <= 0 ? kv('Target', 'reached') : null
+    ),
+    lineChart(bw.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 130, target: goalW, yUnit: ' lb' }),
+    h('p', { class: `advice-line advice-line--sm tone-${advice.tone}`, text: advice.headline })
+  );
+}
+
 function stat(cap, val, sub) {
   return h('div', { class: 'stat' },
     h('span', { class: 'stat-cap', text: cap }),
@@ -3955,16 +4516,29 @@ function stat(cap, val, sub) {
   );
 }
 
+function kv(k, v) {
+  if (!v) return null;
+  return h('div', { class: 'kv' },
+    h('span', { class: 'kv-k', text: k }),
+    h('span', { class: 'kv-v', text: v })
+  );
+}
+
 function metricTile(key, root, nav) {
   const m = METRICS[key];
   const series = store.metricSeries(key);
   const last = series.length ? series[series.length - 1] : null;
   const firstV = series.length ? series[0].v : null;
-  let delta = null;
+
+  let deltaGood = null, deltaText = null;
   if (series.length > 1) {
     const raw = last.v - firstV;
-    delta = m.better === 'lower' ? -raw : raw;
+    deltaText = `${raw >= 0 ? '+' : ''}${raw.toFixed(1)}`;
+    if (m.better === 'higher') deltaGood = raw >= 0;
+    else if (m.better === 'lower') deltaGood = raw <= 0;
+    else deltaGood = Math.abs(raw) < 0.75; // "flat" — small change is the win
   }
+
   return h('button', {
     class: 'mtile',
     onclick: () => openMetricSheet(key, m, root, nav)
@@ -3977,9 +4551,9 @@ function metricTile(key, root, nav) {
     series.length > 1
       ? sparkline(series.map(p => p.v), 'currentColor', 64, 20)
       : h('span', { class: 'spark-empty', text: 'tap to log' }),
-    delta != null ? h('span', {
-      class: `mtile-delta ${delta >= 0 ? 'up' : 'down'}`,
-      text: `${delta >= 0 ? '▲' : '▼'} ${Math.abs(last.v - firstV).toFixed(1)}`
+    deltaText ? h('span', {
+      class: `mtile-delta ${deltaGood ? 'up' : 'down'}`,
+      text: deltaText
     }) : null
   );
 }
@@ -4005,7 +4579,7 @@ function logCard(root, nav) {
         }
       }, 'Log')
     ),
-    h('p', { class: 'muted', text: 'Approach and block jump are touch height minus your standing reach. Log the reach once, then just the difference.' })
+    h('p', { class: 'muted', text: 'Weigh in at least three times a week — the app needs several points across at least ten days before it will trust a trend. Approach and block jump are touch height minus your standing reach.' })
   );
 }
 
@@ -4037,9 +4611,12 @@ return { render };
 });
 
 __def('fuel', function () {
-const { h, clear, ring, toast, sheet, numberInput } = __req('ui');
+const { h, clear, toast, sheet, numberInput } = __req('ui');
 const store = __req('store');
-const { computeTargets, projectedWeight, RULES, SUPPLEMENTS, MEAL_TEMPLATE } = __req('nutrition');
+const {
+  computeTargets, projectedWeight, weeksToGoal, surplusAdvice,
+  GOALS, RULES, SUPPLEMENTS, MEAL_TEMPLATE, SHAKE
+} = __req('nutrition');
 const { blockForWeek, weekSessions, TOTAL_WEEKS } = __req('program');
 
 function render(root, nav) {
@@ -4058,7 +4635,7 @@ function render(root, nav) {
       h('div', { class: 'hdr-top' },
         h('div', null,
           h('h1', { class: 'hdr-title', text: 'Fuel' }),
-          h('p', { class: 'hdr-sub', text: `${isTrainingDay ? 'Training day' : 'Rest day'} targets · recalculated from your ${profile.weightLb} lb bodyweight` })
+          h('p', { class: 'hdr-sub', text: `${t.goalName} · ${isTrainingDay ? 'training day' : 'rest day'} · from your ${profile.weightLb} lb bodyweight` })
         )
       )
     )
@@ -4067,10 +4644,10 @@ function render(root, nav) {
   const body = h('div', { class: 'stack' });
   root.append(body);
 
-  /* --------------------------------------------------------- today's numbers */
+  /* ------------------------------------------------------- today's numbers */
   body.append(
     h('div', { class: 'card card--hero' },
-      h('span', { class: 'hero-cap', text: isTrainingDay ? "Today — training day" : 'Today — rest day' }),
+      h('span', { class: 'hero-cap', text: isTrainingDay ? 'Today — training day' : 'Today — rest day' }),
       h('div', { class: 'hero-row' },
         h('span', { class: 'hero-num', text: `${target.kcal}` }),
         h('span', { class: 'hero-unit', text: 'kcal' })
@@ -4081,10 +4658,13 @@ function render(root, nav) {
         macro('Fat', target.fat, 'g', '#e5484d')
       ),
       h('p', { class: 'note-inline', text: isTrainingDay
-        ? 'Training days sit just under maintenance so nothing about your performance suffers. Carbs stay high on purpose — a max jump is powered almost entirely by stored glycogen.'
-        : 'Rest days carry the deficit. You are not fueling a session, so this is where the fat loss comes from without ever costing you a jump.' })
+        ? 'Training days carry the bigger surplus, because that is the food you can actually put to use. Most of the extra should arrive as carbs around your session.'
+        : 'Rest days sit much closer to maintenance. You are not fuelling a session, so there is no reason to eat like you are.' })
     )
   );
+
+  /* --------------------------------------------------------- the rate check */
+  body.append(rateCard(t, root, nav));
 
   /* ------------------------------------------------------------- both days */
   body.append(
@@ -4097,12 +4677,23 @@ function render(root, nav) {
       h('div', { class: 'kvlist' },
         kv('Maintenance (TDEE)', `${t.tdee} kcal`),
         kv('Weekly average', `${t.weeklyAvg} kcal`),
-        kv('Weekly deficit', `${t.deficitPerWeek} kcal ≈ ${(t.deficitPerWeek / 3500).toFixed(1)} lb of fat`),
+        kv('Weekly surplus', `${t.weeklyDelta > 0 ? '+' : ''}${t.weeklyDelta} kcal ≈ ${(t.weeklyDelta / 3500).toFixed(2)} lb`),
+        kv('Target rate', `${t.targetRate > 0 ? '+' : ''}${t.targetRate} lb / week`),
         kv('Water floor', `${t.water} oz + 20–30 oz per hour on court`),
         kv('Fiber', `${t.fiber} g`),
         kv('Sodium', t.sodium)
       ),
-      h('p', { class: 'note-inline', text: `At this rate you should land near ${projectedWeight(profile.weightLb, TOTAL_WEEKS, t.deficitPerWeek)} lb by week 16 — visibly leaner, same or better strength. That is deliberately slow. Faster cuts cost vertical inches.` })
+      goalProjection(profile, t)
+    )
+  );
+
+  /* --------------------------------------------------------------- the shake */
+  body.append(
+    h('div', { class: 'card card--shake' },
+      h('h2', { class: 'sect-title', text: SHAKE.name }),
+      h('p', { class: 'muted', text: SHAKE.note }),
+      h('ul', { class: 'shakelist' }, SHAKE.items.map(x => h('li', { text: x }))),
+      h('span', { class: 'meal-macro', text: SHAKE.macro })
     )
   );
 
@@ -4110,7 +4701,7 @@ function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'A day that hits the numbers' }),
-      h('p', { class: 'muted', text: 'One worked example, not a rule. Swap foods freely — just keep protein per meal and total carbs where they are.' }),
+      h('p', { class: 'muted', text: 'One worked example on a training day, not a rule. Swap foods freely — keep the protein per feeding and the total carbs where they are.' }),
       h('div', { class: 'meals' },
         MEAL_TEMPLATE.map(m => h('div', { class: 'meal' },
           h('div', { class: 'meal-head' },
@@ -4157,12 +4748,46 @@ function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'Recalibrate' }),
-      h('p', { class: 'muted', text: 'These numbers come from your bodyweight, height, age, and how much you train. Update them and everything above recalculates.' }),
+      h('p', { class: 'muted', text: 'Everything above is derived from your bodyweight, height, age, training load and goal. Change any of them and the whole plan recalculates.' }),
       h('button', { class: 'btn btn--ghost', onclick: () => openCalibrate(root, nav) }, 'Adjust my inputs')
     )
   );
 
   body.append(h('div', { class: 'spacer' }));
+}
+
+/* ----------------------------------------------------------------- pieces */
+
+function rateCard(t, root, nav) {
+  const trend = store.weightTrend(28);
+  const advice = surplusAdvice(trend ? trend.perWeek : null, t.targetRate);
+
+  return h('div', { class: `card card--advice is-${advice.tone}` },
+    h('div', { class: 'advice-head' },
+      h('span', { class: 'hero-cap', text: 'Am I eating the right amount?' }),
+      trend ? h('span', { class: 'chip', text: `${trend.n} weigh-ins · ${trend.spanDays} days` }) : null
+    ),
+    h('p', { class: 'advice-line', text: advice.headline }),
+    h('p', { class: 'muted', text: advice.detail }),
+    advice.kcalDelta ? h('p', { class: 'note-inline', text:
+      `That works out to about ${t.train.kcal + advice.kcalDelta} kcal on training days instead of ${t.train.kcal}. Adjust, hold it for two weeks, then look again.` }) : null,
+    h('button', {
+      class: 'btn btn--ghost btn--sm',
+      onclick: () => nav('progress')
+    }, 'Log a weigh-in')
+  );
+}
+
+function goalProjection(profile, t) {
+  const goalW = profile.goalWeight;
+  if (!goalW || !t.targetRate) return null;
+  const weeks = weeksToGoal(profile.weightLb, goalW, t.targetRate);
+  if (weeks == null) return null;
+  if (weeks === 0) {
+    return h('p', { class: 'note-inline', text: `You are at your ${goalW} lb target. Switch the goal to "Maintain" to hold here, or "Lean out" to sharpen up at this weight.` });
+  }
+  return h('p', { class: 'note-inline', text:
+    `At ${t.targetRate} lb a week, ${profile.weightLb} to ${goalW} lb is about ${weeks} weeks — roughly ${(weeks / 4.35).toFixed(1)} months. The program runs ${TOTAL_WEEKS} weeks, so it is built to land right about there.` });
 }
 
 function macro(name, val, unit, color) {
@@ -4195,19 +4820,28 @@ function kv(k, v) {
 function openCalibrate(root, nav) {
   const p = store.get().profile;
   const wt = numberInput({ value: p.weightLb, class: 'num num--wide' });
+  const gw = numberInput({ value: p.goalWeight, class: 'num num--wide' });
   const ht = numberInput({ value: p.heightIn, class: 'num num--wide' });
   const age = numberInput({ value: p.age, class: 'num num--wide' });
+  const goal = h('select', { class: 'sel' },
+    Object.entries(GOALS).map(([k, g]) => h('option', {
+      value: k, text: `${g.name} (${g.rate > 0 ? '+' : ''}${g.rate} lb/wk)`, selected: p.goal === k
+    }))
+  );
   const act = h('select', { class: 'sel' },
     [
       { v: 1.55, l: 'Lifting only, mostly desk-bound' },
-      { v: 1.7, l: 'Lifting 5× + volleyball 2–3× (default)' },
-      { v: 1.85, l: 'Lifting 5× + volleyball 4–5×' },
+      { v: 1.7, l: 'Lifting 5–6× + volleyball 2–3× (default)' },
+      { v: 1.85, l: 'Lifting 5–6× + volleyball 4–5×' },
       { v: 2.0, l: 'Two-a-days / tournament weeks' }
     ].map(o => h('option', { value: o.v, text: o.l, selected: Math.abs(o.v - p.activity) < 0.01 }))
   );
 
   sheet('Your inputs', h('div', { class: 'formstack' },
+    field('Goal', goal),
+    h('p', { class: 'muted', text: Object.values(GOALS).map(g => `${g.name}: ${g.blurb}`).join('\n') }),
     field('Bodyweight (lb)', wt),
+    field('Target weight (lb)', gw),
     field('Height (in)', ht),
     field('Age', age),
     field('Activity level', act)
@@ -4218,9 +4852,11 @@ function openCalibrate(root, nav) {
       onClick: () => {
         store.update(s => {
           s.profile.weightLb = parseFloat(wt.value) || s.profile.weightLb;
+          s.profile.goalWeight = parseFloat(gw.value) || s.profile.goalWeight;
           s.profile.heightIn = parseFloat(ht.value) || s.profile.heightIn;
           s.profile.age = parseInt(age.value, 10) || s.profile.age;
           s.profile.activity = parseFloat(act.value) || s.profile.activity;
+          s.profile.goal = goal.value;
         });
         toast('Targets recalculated');
         render(root, nav);
@@ -4243,6 +4879,7 @@ __def('settings', function () {
 const { h, clear, toast, sheet, numberInput, confirmSheet } = __req('ui');
 const store = __req('store');
 const { MAX_LIFTS, blockForWeek, TOTAL_WEEKS } = __req('program');
+const { GOALS } = __req('nutrition');
 const { EXERCISES } = __req('exercises');
 
 function render(root, nav) {
@@ -4308,7 +4945,7 @@ function render(root, nav) {
           onclick: () => { store.setWeek(store.currentWeek() + 1); render(root, nav); }
         }, '+')
       ),
-      h('p', { class: 'muted', text: 'The week advances on its own once you finish all five sessions. Move it manually if you need to skip ahead or repeat one.' })
+      h('p', { class: 'muted', text: 'The week advances on its own once you finish the five main sessions — the Saturday Pump day is optional and does not hold you back. Move it manually to skip ahead or repeat a week.' })
     )
   );
 
@@ -4320,6 +4957,16 @@ function render(root, nav) {
         field('Name', h('input', {
           class: 'num num--wide', type: 'text', value: s.profile.name, placeholder: 'Your name',
           onchange: e => store.update(st => { st.profile.name = e.target.value; })
+        })),
+        field('Goal', h('select', {
+          class: 'sel',
+          onchange: e => { store.update(st => { st.profile.goal = e.target.value; }); toast('Fuel targets updated'); }
+        }, Object.entries(GOALS).map(([k, g]) => h('option', {
+          value: k, text: `${g.name} (${g.rate > 0 ? '+' : ''}${g.rate} lb/wk)`, selected: s.profile.goal === k
+        })))),
+        field('Target weight (lb)', numberInput({
+          value: s.profile.goalWeight,
+          onchange: e => store.update(st => { st.profile.goalWeight = parseFloat(e.target.value) || st.profile.goalWeight; })
         })),
         field('Bodyweight (lb)', numberInput({
           value: s.profile.weightLb,
@@ -4426,7 +5073,7 @@ function render(root, nav) {
   );
 
   body.append(h('footer', { class: 'appfoot' },
-    h('p', { text: 'Above the Net · a 16-week block plan built around your jump' }),
+    h('p', { text: `Frame · a ${TOTAL_WEEKS}-week lean-mass plan built around your jump` }),
     h('p', { class: 'muted small', text: 'General fitness guidance, not medical advice. Sharp or persistent pain means see a professional, not push through.' })
   ));
 

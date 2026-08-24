@@ -1,7 +1,7 @@
 import { h, clear, lineChart, barChart, ring, sparkline, numberInput, toast, sheet, fmtNum, fmtDate } from '../ui.js';
 import * as store from '../store.js';
-import { METRICS, MAX_LIFTS, TOTAL_WEEKS, blockForWeek } from '../data/program.js';
-import { computeTargets, projectedWeight } from '../data/nutrition.js';
+import { METRICS, MAX_LIFTS, TOTAL_WEEKS, blockForWeek, weeklySetsByPattern } from '../data/program.js';
+import { computeTargets, projectedWeight, weeksToGoal, surplusAdvice } from '../data/nutrition.js';
 
 const KEY_LIFTS = [
   { ex: 'back_squat', ref: 'squat', name: 'Back Squat' },
@@ -10,13 +10,21 @@ const KEY_LIFTS = [
   { ex: 'ohp', ref: 'ohp', name: 'Overhead Press' }
 ];
 
-const HERO_METRICS = ['approach', 'block', 'broad', 'agility'];
+const SIZE_METRICS = ['waist', 'chest', 'arm', 'thigh'];
+const ATHLETIC_METRICS = ['approach', 'block', 'broad', 'agility'];
+
+const PATTERN_LABELS = {
+  squat: 'Squat', hinge: 'Hinge', push: 'Push', pull: 'Pull',
+  lunge: 'Lunge', calf: 'Calves', core: 'Core', plyo: 'Jumps', cod: 'Agility'
+};
 
 export function render(root, nav) {
   clear(root);
   const cw = store.currentWeek();
   root.style.setProperty('--accent', blockForWeek(cw).color);
 
+  const profile = store.get().profile;
+  const t = computeTargets(profile);
   const st = store.streak();
   const adh = store.adherence();
   const overall = store.overallProgress();
@@ -45,36 +53,30 @@ export function render(root, nav) {
     )
   );
 
-  /* -------------------------------------------------------- headline jump */
-  const approach = store.metricSeries('approach');
-  const first = approach[0], last = approach[approach.length - 1];
-  if (approach.length) {
-    const delta = last.v - first.v;
-    body.append(
-      h('div', { class: 'card card--hero' },
-        h('span', { class: 'hero-cap', text: 'Approach jump' }),
-        h('div', { class: 'hero-row' },
-          h('span', { class: 'hero-num', text: `${last.v}` }),
-          h('span', { class: 'hero-unit', text: 'in' }),
-          approach.length > 1 ? h('span', {
-            class: `hero-delta ${delta >= 0 ? 'up' : 'down'}`,
-            text: `${delta >= 0 ? '+' : ''}${delta.toFixed(1)} since week 1`
-          }) : null
-        ),
-        lineChart(approach.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 130, yUnit: '"' })
-      )
-    );
-  }
+  /* --------------------------------------------------- headline: bodyweight */
+  body.append(bodyweightHero(profile, t));
 
   /* ------------------------------------------------------- log a metric */
   body.append(logCard(root, nav));
 
-  /* ---------------------------------------------------- performance grid */
+  /* -------------------------------------------------------- measurements */
   body.append(
     h('div', { class: 'card' },
-      h('h2', { class: 'sect-title', text: 'Athletic tests' }),
+      h('h2', { class: 'sect-title', text: 'The tape' }),
+      h('p', { class: 'muted', text: 'The number that matters is the ratio between these. Chest, arm and thigh climbing while the waist holds flat is a clean gain — measure cold, every two weeks.' }),
+      h('div', { class: 'measuregrid' },
+        SIZE_METRICS.map(k => metricTile(k, root, nav))
+      )
+    )
+  );
+
+  /* ---------------------------------------------------- athletic retention */
+  body.append(
+    h('div', { class: 'card' },
+      h('h2', { class: 'sect-title', text: 'Still an athlete?' }),
+      h('p', { class: 'muted', text: 'These are the guardrails on the gaining phase. Holding them steady while you add 10 lb means the weight is muscle; watching them slide means it is not.' }),
       h('div', { class: 'metricgrid' },
-        HERO_METRICS.map(k => metricTile(k, root, nav))
+        ATHLETIC_METRICS.map(k => metricTile(k, root, nav))
       )
     )
   );
@@ -83,7 +85,7 @@ export function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'Estimated 1RM' }),
-      h('p', { class: 'muted', text: 'Calculated from every set you log, so it moves without you having to test.' }),
+      h('p', { class: 'muted', text: 'Calculated from every set you log. On a gaining phase these should climb steadily — muscle you cannot load eventually stops growing.' }),
       h('div', { class: 'stack-sm' },
         KEY_LIFTS.map(l => {
           const series = store.e1rmSeries(l.ex);
@@ -95,7 +97,7 @@ export function render(root, nav) {
               h('span', { class: 'liftrow-sub', text: best ? `best logged e1RM ${best} lb` : 'no sets logged yet' })
             ),
             series.length > 1
-              ? sparkline(series.map(p => p.v), blockForWeek(store.currentWeek()).color)
+              ? sparkline(series.map(p => p.v), blockForWeek(cw).color)
               : h('span', { class: 'spark-empty', text: '—' }),
             h('span', { class: 'liftrow-val', text: `${cur}` })
           );
@@ -104,33 +106,21 @@ export function render(root, nav) {
     )
   );
 
-  /* ----------------------------------------------------------- body comp */
-  const bw = store.metricSeries('bodyweight');
-  const waist = store.metricSeries('waist');
-  const targets = computeTargets(store.get().profile);
-  body.append(
-    h('div', { class: 'card' },
-      h('h2', { class: 'sect-title', text: 'Body composition' }),
-      bw.length
-        ? h('div', null,
-            h('div', { class: 'bc-row' },
-              h('div', null,
-                h('span', { class: 'bc-num', text: `${bw[bw.length - 1].v}` }),
-                h('span', { class: 'bc-unit', text: 'lb' }),
-                h('span', { class: 'bc-cap', text: `7-entry avg ${store.metricAvg('bodyweight', 7)} lb` })
-              ),
-              waist.length ? h('div', null,
-                h('span', { class: 'bc-num', text: `${waist[waist.length - 1].v}` }),
-                h('span', { class: 'bc-unit', text: 'in' }),
-                h('span', { class: 'bc-cap', text: 'waist' })
-              ) : null
-            ),
-            lineChart(bw.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 120, target: 181, yUnit: ' lb' })
-          )
-        : h('p', { class: 'muted', text: 'Log your weight to see the trend. Same time, same conditions, every time.' }),
-      h('p', { class: 'note-inline', text: `Projection at the current plan: about ${projectedWeight(store.get().profile.weightLb, 16, targets.deficitPerWeek)} lb by week 16, with strength holding or climbing. Weight will barely move some weeks — watch the waist and the photos instead.` })
-    )
-  );
+  /* --------------------------------------------------- weekly hard sets */
+  const patterns = weeklySetsByPattern(cw);
+  const patternRows = Object.entries(patterns)
+    .filter(([p]) => PATTERN_LABELS[p])
+    .sort((a, b) => b[1] - a[1])
+    .map(([p, v]) => ({ label: PATTERN_LABELS[p], v, display: `${v} sets` }));
+  if (patternRows.length) {
+    body.append(
+      h('div', { class: 'card' },
+        h('h2', { class: 'sect-title', text: `Week ${cw} hard sets` }),
+        h('p', { class: 'muted', text: 'Weekly set count per movement pattern — the number that actually drives growth. Ten to twenty per pattern is the productive range; the optional Pump day and the warm-up work are not counted.' }),
+        barChart(patternRows)
+      )
+    );
+  }
 
   /* ------------------------------------------------------------- volume */
   const byWeek = store.tonnageByWeek();
@@ -139,7 +129,7 @@ export function render(root, nav) {
     body.append(
       h('div', { class: 'card' },
         h('h2', { class: 'sect-title', text: 'Weekly tonnage' }),
-        h('p', { class: 'muted', text: 'Total weight moved. Expect this to dip on deload weeks — that is the plan working.' }),
+        h('p', { class: 'muted', text: 'Total weight moved. Expect this to dip on every fourth week — that is the deload working.' }),
         barChart(weeks.map(w => ({ label: `Wk ${w}`, v: byWeek[w], display: `${fmtNum(byWeek[w])} lb` })))
       )
     );
@@ -170,6 +160,48 @@ export function render(root, nav) {
   body.append(h('div', { class: 'spacer' }));
 }
 
+/* ----------------------------------------------------------------- pieces */
+
+function bodyweightHero(profile, t) {
+  const bw = store.metricSeries('bodyweight');
+  const trend = store.weightTrend(28);
+  const goalW = profile.goalWeight;
+
+  if (!bw.length) {
+    return h('div', { class: 'card card--hero' },
+      h('span', { class: 'hero-cap', text: 'Body weight' }),
+      h('p', { class: 'muted', text: `Log your weight below to start tracking. Target is ${goalW} lb, and the app will tell you whether you are getting there at the right speed.` })
+    );
+  }
+
+  const last = bw[bw.length - 1];
+  const first = bw[0];
+  const gained = last.v - first.v;
+  const avg = store.metricAvg('bodyweight', 7);
+  const toGo = goalW ? +(goalW - last.v).toFixed(1) : null;
+  const advice = surplusAdvice(trend ? trend.perWeek : null, t.targetRate);
+
+  return h('div', { class: 'card card--hero' },
+    h('span', { class: 'hero-cap', text: `Body weight — target ${goalW} lb` }),
+    h('div', { class: 'hero-row' },
+      h('span', { class: 'hero-num', text: `${last.v}` }),
+      h('span', { class: 'hero-unit', text: 'lb' }),
+      bw.length > 1 ? h('span', {
+        class: `hero-delta ${gained >= 0 ? 'up' : 'down'}`,
+        text: `${gained >= 0 ? '+' : ''}${gained.toFixed(1)} since week 1`
+      }) : null
+    ),
+    h('div', { class: 'kvlist' },
+      avg ? kv('7-entry average', `${avg} lb`) : null,
+      trend ? kv('Current rate', `${trend.perWeek >= 0 ? '+' : ''}${trend.perWeek} lb / week (target ${t.targetRate > 0 ? '+' : ''}${t.targetRate})`) : null,
+      toGo != null && toGo > 0 ? kv('To go', `${toGo} lb · about ${weeksToGoal(last.v, goalW, t.targetRate) ?? '—'} weeks`) : null,
+      toGo != null && toGo <= 0 ? kv('Target', 'reached') : null
+    ),
+    lineChart(bw.map((p, idx) => ({ x: idx, y: p.v })), { hgt: 130, target: goalW, yUnit: ' lb' }),
+    h('p', { class: `advice-line advice-line--sm tone-${advice.tone}`, text: advice.headline })
+  );
+}
+
 function stat(cap, val, sub) {
   return h('div', { class: 'stat' },
     h('span', { class: 'stat-cap', text: cap }),
@@ -178,16 +210,29 @@ function stat(cap, val, sub) {
   );
 }
 
+function kv(k, v) {
+  if (!v) return null;
+  return h('div', { class: 'kv' },
+    h('span', { class: 'kv-k', text: k }),
+    h('span', { class: 'kv-v', text: v })
+  );
+}
+
 function metricTile(key, root, nav) {
   const m = METRICS[key];
   const series = store.metricSeries(key);
   const last = series.length ? series[series.length - 1] : null;
   const firstV = series.length ? series[0].v : null;
-  let delta = null;
+
+  let deltaGood = null, deltaText = null;
   if (series.length > 1) {
     const raw = last.v - firstV;
-    delta = m.better === 'lower' ? -raw : raw;
+    deltaText = `${raw >= 0 ? '+' : ''}${raw.toFixed(1)}`;
+    if (m.better === 'higher') deltaGood = raw >= 0;
+    else if (m.better === 'lower') deltaGood = raw <= 0;
+    else deltaGood = Math.abs(raw) < 0.75; // "flat" — small change is the win
   }
+
   return h('button', {
     class: 'mtile',
     onclick: () => openMetricSheet(key, m, root, nav)
@@ -200,9 +245,9 @@ function metricTile(key, root, nav) {
     series.length > 1
       ? sparkline(series.map(p => p.v), 'currentColor', 64, 20)
       : h('span', { class: 'spark-empty', text: 'tap to log' }),
-    delta != null ? h('span', {
-      class: `mtile-delta ${delta >= 0 ? 'up' : 'down'}`,
-      text: `${delta >= 0 ? '▲' : '▼'} ${Math.abs(last.v - firstV).toFixed(1)}`
+    deltaText ? h('span', {
+      class: `mtile-delta ${deltaGood ? 'up' : 'down'}`,
+      text: deltaText
     }) : null
   );
 }
@@ -228,7 +273,7 @@ function logCard(root, nav) {
         }
       }, 'Log')
     ),
-    h('p', { class: 'muted', text: 'Approach and block jump are touch height minus your standing reach. Log the reach once, then just the difference.' })
+    h('p', { class: 'muted', text: 'Weigh in at least three times a week — the app needs several points across at least ten days before it will trust a trend. Approach and block jump are touch height minus your standing reach.' })
   );
 }
 

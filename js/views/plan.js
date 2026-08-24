@@ -1,7 +1,7 @@
 import { h, clear, ring, sheet } from '../ui.js';
 import * as store from '../store.js';
 import {
-  BLOCKS, TOTAL_WEEKS, weekSessions, dayLabel, weekInBlock, isDeloadWeek, isTestWeek,
+  BLOCKS, PHASES, TOTAL_WEEKS, weekSessions, dayLabel, weekInBlock, isDeloadWeek, isTestWeek,
   sessionMinutes, blockForWeek, TEST_DAY_A, TEST_DAY_B
 } from '../data/program.js';
 import { setTarget } from './today.js';
@@ -21,8 +21,8 @@ export function render(root, nav) {
     h('header', { class: 'hdr' },
       h('div', { class: 'hdr-top' },
         h('div', null,
-          h('h1', { class: 'hdr-title', text: 'Above the Net' }),
-          h('p', { class: 'hdr-sub', text: `16-week block plan · ${overall.done} of ${overall.total} sessions logged` })
+          h('h1', { class: 'hdr-title', text: 'Frame' }),
+          h('p', { class: 'hdr-sub', text: `${TOTAL_WEEKS}-week lean-mass plan · ${overall.done} of ${overall.total} sessions logged` })
         ),
         h('div', { class: 'hdr-ring' },
           ring(overall.pct, { size: 60, stroke: 5, label: `${overall.pct}` }),
@@ -39,7 +39,17 @@ export function render(root, nav) {
   body.append(
     h('div', { class: 'card card--brief' },
       h('p', { class: 'focus', text: 'The plan in one paragraph' }),
-      h('p', { class: 'brief', text: 'Four four-week blocks, each one building on the last. You start by making your tissue tolerant, then you get strong, then you teach that strength to move fast, then you sharpen it and test it. Every block loads for three weeks and unloads on the fourth, which is where the adaptation actually shows up. Week 16 re-runs the same measurements as week 0 so the progress is a number, not a feeling.' })
+      h('p', { class: 'brief', text: 'Six four-week blocks that take you from 190 to a lean 200. Volume builds the muscle in the first phase, load raises the ceiling in the second, and the third pushes both before a taper and a full retest. Every block loads for three weeks and unloads on the fourth. A Wednesday jump session runs the whole way through so the ten pounds you add makes you a better athlete rather than a heavier one.' })
+    ),
+    h('div', { class: 'card' },
+      h('h2', { class: 'sect-title', text: 'Three phases' }),
+      h('div', { class: 'phaserow' },
+        PHASES.map(ph => h('div', { class: 'phase' },
+          h('span', { class: 'phase-weeks', text: `Weeks ${ph.weeks}` }),
+          h('strong', { class: 'phase-name', text: ph.name }),
+          h('span', { class: 'phase-detail', text: ph.detail })
+        ))
+      )
     )
   );
 
@@ -119,7 +129,7 @@ export function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'The test battery' }),
-      h('p', { class: 'muted', text: 'Run this before week 1 to set your baseline, again after week 8, and again in week 16. Same order, same conditions, every time — otherwise the numbers are noise.' }),
+      h('p', { class: 'muted', text: 'Run this before week 1 to set your baseline, then again at weeks 8, 16 and 24. Same order, same conditions, every time — otherwise the numbers are noise.' }),
       h('div', { class: 'stack-sm' },
         [TEST_DAY_A, TEST_DAY_B].map(t => h('button', {
           class: 'rowbtn',
@@ -178,12 +188,14 @@ function showBaselineGuide() {
 }
 
 const PRINCIPLES = [
-  { t: 'Jumps come first, always', d: 'Plyometrics and max jumps go at the front of a session while your nervous system is fresh. A tired jump trains you to jump tired.' },
-  { t: 'Quality is the rep target', d: 'On any jump or sprint, the set ends when output drops — not when you hit the prescribed number. Chasing reps on power work makes you slower.' },
-  { t: 'Never skip the durability block', d: 'The five minutes of calves, tibs, adductors and cuff work at the end of each session is what keeps you on the court. It is the least fun and the most important part.' },
-  { t: 'Two hard days on the court, not five', d: 'This program assumes 2-3 volleyball sessions a week. If you play more, drop the Wednesday conditioning and cut the Saturday finisher first.' },
-  { t: 'Deload weeks are not optional', d: 'Week 4 of each block is where the previous three weeks actually turn into adaptation. Skipping it is how people plateau in week 9.' },
-  { t: 'Log every set', d: 'The app cannot suggest loads it has never seen. Thirty seconds of logging is what turns this from a workout list into a program that progresses.' },
-  { t: 'Something hurts — change it, do not push it', d: 'Sharp joint pain means swap the movement, not tough it out. Tendon soreness that fades in the warm-up is fine; pain that gets worse as you go is not.' },
-  { t: 'Sleep is part of the program', d: 'Eight hours minimum. Below seven, your jump height, reaction time, and injury risk all get measurably worse and no amount of training makes up for it.' }
+  { t: 'Progressive overload is the whole program', d: 'Every session, try to beat the log — one more rep, or five more pounds at the same reps. Muscle grows in response to doing more than last time, and nothing else in this plan matters as much.' },
+  { t: 'Take the last set close to failure', d: 'On isolation work, the final set should have nothing left in it. On the big compounds, leave one or two reps — a missed squat costs more than the extra rep is worth.' },
+  { t: 'Full range beats heavy partials', d: 'You have long limbs, which means long ranges of motion and more growth per rep. Load what you can control all the way down, not what looks impressive at the top.' },
+  { t: 'Eat like it is part of training', d: 'You cannot build ten pounds of muscle out of nothing. Missing the surplus for a week undoes that week of training more thoroughly than skipping a session would.' },
+  { t: 'Jumps stay in — every week', d: 'The Wednesday session is short and never gets cut. It is the difference between adding athletic weight and just getting heavier.' },
+  { t: 'Deload weeks are not optional', d: 'Week 4 of each block is where the previous three weeks turn into muscle. Skipping it is how people stall in block 3 and quit in block 5.' },
+  { t: 'Log every set', d: 'Beating the log is only possible if there is a log. Thirty seconds of typing is what turns this from a workout list into a program that progresses.' },
+  { t: 'Drop the Pump day, never the main five', d: 'When the week gets busy or the court took a lot out of you, Saturday is what goes. The five main sessions are the program.' },
+  { t: 'Sleep eight hours', d: 'In a surplus, short sleep shifts what you gain toward fat regardless of your macros. It is the cheapest anabolic available and the easiest to waste.' }
 ];
+

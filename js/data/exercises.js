@@ -615,11 +615,189 @@ export const EXERCISES = {
     cues: ['Toe from the wall, drive the knee to touch, heel down.', 'Measure toe-to-wall distance in cm.', 'Target: 10cm+ both sides.'],
     why: 'Screens the mobility restriction most likely to limit your jump and beat up your knees.'
   },
+  test_measure: {
+    name: 'Tape Measurements',
+    cat: 'test', pattern: 'test', loadType: 'time',
+    cues: ['Cold, not after training — a pumped arm reads big and means nothing.',
+      'Arm flexed at the peak, chest at the nipple line, thigh at the midpoint.',
+      'Same spot, same tension, same time of day, every single time.'],
+    why: 'On a gaining phase the tape is your best evidence that the weight is going where you want it. Arm, chest and thigh up while the waist holds flat is exactly the picture you are after.'
+  },
   test_bodycomp: {
     name: 'Body Composition Check',
     cat: 'test', pattern: 'test', loadType: 'time',
     cues: ['Morning, fasted, after the bathroom.', 'Weight, navel waist measurement, 3 photos (front/side/back).', 'Same conditions every time or the data is noise.'],
-    why: 'Weight alone lies during recomposition. Waist plus photos tell the truth.'
+    why: 'Weight alone lies. Waist, measurements and photos tell the truth.'
+  },
+
+  /* ------------------------------------------------------ MASS: LOWER */
+  leg_press: {
+    name: 'Leg Press',
+    cat: 'strength', pattern: 'squat', loadType: 'rpe',
+    cues: ['Feet mid-platform, knees track over the toes.',
+      'Come down until the hips just start to tuck, then stop.',
+      'Do not lock the knees out hard at the top — stay under tension.'],
+    why: 'Lets you pile on quad volume without the spinal and stabiliser cost of another squat. For a tall lifter this is where a lot of leg size actually comes from.'
+  },
+  hack_squat: {
+    name: 'Hack Squat',
+    cat: 'strength', pattern: 'squat', loadType: 'rpe',
+    cues: ['Back flat on the pad, feet low on the platform.', 'Sink deep — the machine supports you, use the range.',
+      'Drive through the whole foot, no heel lift.'],
+    why: 'The most quad-biased loaded squat pattern there is. If you only have a leg press, use that instead.'
+  },
+  leg_ext: {
+    name: 'Leg Extension',
+    cat: 'accessory', pattern: 'squat', loadType: 'rpe',
+    cues: ['Squeeze hard at full extension for a beat.', 'Lower for 3 seconds, no clanging the stack.',
+      'Point the toes up to bias the quad.'],
+    why: 'The only movement that loads the quad at short length. Cheap growth with almost no systemic fatigue.'
+  },
+  walking_lunge: {
+    name: 'Walking Lunge',
+    cat: 'strength', pattern: 'lunge', loadType: 'rpe',
+    cues: ['Long stride, front shin close to vertical.', 'Drive straight up out of the bottom.',
+      'Keep the torso tall — no falling forward.'],
+    why: 'Loaded single-leg work through a long stride. Adds glute and quad size and doubles as usable court strength.'
+  },
+  pause_squat: {
+    name: 'Pause Squat',
+    cat: 'strength', pattern: 'squat', loadType: 'pct', ref: 'squat',
+    cues: ['Full 2-second dead stop at the bottom.', 'Stay braced through the pause — do not relax and bounce.',
+      'Explode out of the hole.'],
+    why: 'Kills the stretch reflex so the muscle does all the work. Builds strength exactly where you are weakest.'
+  },
+  seated_leg_curl: {
+    name: 'Seated Leg Curl',
+    cat: 'strength', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Hips strapped down, torso upright.', 'Curl hard, hold the peak a beat, lower for 3 seconds.',
+      'Do not let the hips rise to help.'],
+    why: 'Trains the hamstring at long muscle length, which is where most of its growth comes from — and it is the single best hamstring hypertrophy machine.'
+  },
+  lying_leg_curl: {
+    name: 'Lying Leg Curl',
+    cat: 'accessory', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Hips pressed into the pad.', 'Full range, controlled negative.', 'Point the toes to shift work into the hamstring.'],
+    why: 'Complements the seated version by loading the hamstring at short length. Different stimulus, same muscle.'
+  },
+  back_ext: {
+    name: '45° Back Extension',
+    cat: 'accessory', pattern: 'hinge', loadType: 'rpe',
+    cues: ['Round down slowly, then extend to a straight line and stop.',
+      'Squeeze the glutes to finish, not the low back.', 'Hug a plate to add load.'],
+    why: 'Glutes, hamstrings and spinal erectors with almost no fatigue cost. Great volume filler on a hinge day.'
+  },
+
+  /* ------------------------------------------------------ MASS: PUSH */
+  incline_bb_press: {
+    name: 'Incline Barbell Press',
+    cat: 'strength', pattern: 'push', loadType: 'pct', ref: 'bench',
+    cues: ['Bench at 30°, shoulder blades tucked down.', 'Bar to the upper chest, elbows about 45°.',
+      'Press in a slight arc back over the shoulders.'],
+    why: 'Upper chest and front delt with a heavy barbell. Percentages here run off your flat bench max.'
+  },
+  db_flat_press: {
+    name: 'Flat DB Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Wrists stacked over the elbows.', 'Lower until you feel a real chest stretch, no further.',
+      'Press up and slightly together.'],
+    why: 'More range than a barbell and each side works independently. Kinder to a tall lifter\'s shoulders.'
+  },
+  cable_fly: {
+    name: 'Cable Fly',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Slight forward lean, soft elbows held at one angle.', 'Bring the hands together and squeeze for a beat.',
+      'Control the stretch — this is where the growth is.'],
+    why: 'Loads the chest at long length with constant tension, which pressing alone never does.'
+  },
+  db_ohp: {
+    name: 'Seated DB Shoulder Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Back supported, ribs down.', 'Press to full reach without clanging the bells together.',
+      'Lower until the elbows are just below shoulder height.'],
+    why: 'Front and side delt volume with a friendlier path than a barbell — good for shoulders that swing all week.'
+  },
+  pushdown: {
+    name: 'Triceps Pushdown',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Elbows pinned to the ribs.', 'Lock out fully and squeeze.', 'Let the weight stretch the triceps at the top.'],
+    why: 'High-volume triceps work with no elbow stress. Pairs with an overhead variation for full coverage.'
+  },
+  skullcrusher: {
+    name: 'EZ-Bar Skullcrusher',
+    cat: 'accessory', pattern: 'push', loadType: 'rpe',
+    cues: ['Lower to just behind the head, not to the forehead.', 'Elbows stay pointed at the ceiling.',
+      'Stop short of a hard lockout to keep tension.'],
+    why: 'Loads the long head of the triceps at length, which is the biggest of the three and the one that adds arm size.'
+  },
+  close_grip_bench: {
+    name: 'Close-Grip Bench Press',
+    cat: 'strength', pattern: 'push', loadType: 'rpe',
+    cues: ['Hands just inside shoulder width — not narrow.', 'Elbows tucked, bar to the lower chest.',
+      'Drive with the triceps.'],
+    why: 'Lets you load the triceps heavily with a compound. Adds pressing strength and arm mass at once.'
+  },
+
+  /* ------------------------------------------------------ MASS: PULL */
+  lat_pulldown: {
+    name: 'Lat Pulldown',
+    cat: 'strength', pattern: 'pull', loadType: 'rpe',
+    cues: ['Slight backward lean, chest proud.', 'Pull the bar to the collarbone, elbows down and back.',
+      'Let the shoulder blades rise fully at the top for a real stretch.'],
+    why: 'Lets you train the lats to failure safely once weighted pull-ups get heavy. Full stretch at the top is the point.'
+  },
+  cable_row: {
+    name: 'Seated Cable Row',
+    cat: 'strength', pattern: 'pull', loadType: 'rpe',
+    cues: ['Chest up, no rocking from the hips.', 'Pull to the navel, squeeze for a beat.',
+      'Let the arms extend fully and the blades spread on the way out.'],
+    why: 'Constant tension through the whole range makes it a better mid-back builder than most barbell rows.'
+  },
+  pullover: {
+    name: 'Cable Pullover',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Hinge slightly, arms nearly straight.', 'Pull the handle down to the thighs using only the lats.',
+      'Full overhead stretch at the top.'],
+    why: 'Isolates the lat in a way no row does. Builds the width that makes a waist look small.'
+  },
+  rear_delt_fly: {
+    name: 'Rear Delt Fly',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Chest supported or hinged over, thumbs down.', 'Lead with the elbows, stop at shoulder level.',
+      'Light weight — this is a small muscle.'],
+    why: 'Rear delts balance out all the pressing, hold your shoulders back, and are half of what makes delts look round.'
+  },
+  shrug: {
+    name: 'DB Shrug',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Straight up, not rolling.', 'Hold the top for a full second.', 'Full stretch at the bottom.'],
+    why: 'Upper traps fill out the frame between neck and shoulders, and they take real load for a jumping athlete.'
+  },
+  preacher_curl: {
+    name: 'Preacher Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Upper arms flat on the pad.', 'Do not fully straighten at the bottom under heavy load.',
+      'Slow 3-second negative.'],
+    why: 'Biceps at short length with zero cheating. Pair with incline curls to cover both ends of the range.'
+  },
+  hammer_curl: {
+    name: 'Hammer Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Neutral grip throughout.', 'Elbows stay at your sides.', 'No swinging — control both directions.'],
+    why: 'Hits the brachialis, which sits under the biceps and pushes it up. This is the one that makes arms look thick.'
+  },
+  cable_curl: {
+    name: 'Cable Curl',
+    cat: 'accessory', pattern: 'pull', loadType: 'rpe',
+    cues: ['Constant tension, no rest at the bottom.', 'Elbows fixed in place.', 'Squeeze at the top.'],
+    why: 'Cables keep load on the biceps through the whole range, which free weights lose at the top and bottom.'
+  },
+  cable_crunch: {
+    name: 'Cable Crunch',
+    cat: 'core', pattern: 'core', loadType: 'rpe',
+    cues: ['Kneel, rope behind the head, hips fixed.', 'Crunch by rounding the spine, not by hinging at the hips.',
+      'Squeeze hard at the bottom.'],
+    why: 'The only way to train abs with progressive load. Abs are muscles — grow them like any other.'
   }
 };
 

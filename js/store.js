@@ -17,6 +17,8 @@ const DEFAULTS = () => ({
     weightLb: 190,
     age: 28,
     activity: 1.7,
+    goal: 'leanGain',
+    goalWeight: 200,
     startDate: todayISO()
   },
   maxes: {
@@ -155,6 +157,51 @@ export function warmupRamp(target, inc = 5) {
   return steps
     .map(st => ({ weight: roundPlate(target * st.pct, inc), reps: st.reps }))
     .filter(st => st.weight < target - inc);
+}
+
+/**
+ * Percentage of 1RM you can move for a given number of reps at RPE 10,
+ * i.e. taken to genuine failure. Standard reps-in-reserve chart.
+ */
+const RPE10_PCT = {
+  1: 1.00, 2: 0.955, 3: 0.922, 4: 0.892, 5: 0.863, 6: 0.837,
+  7: 0.811, 8: 0.786, 9: 0.762, 10: 0.74, 11: 0.72, 12: 0.70,
+  13: 0.685, 14: 0.667, 15: 0.65, 16: 0.64, 17: 0.63, 18: 0.62, 20: 0.60
+};
+
+/** Each RPE point below failure costs roughly this much of your 1RM. */
+const PER_RPE = 0.025;
+
+function repsFromPrescription(reps) {
+  if (typeof reps === 'number') return reps;
+  const nums = String(reps ?? '').match(/\d+/g);
+  if (!nums) return null;
+  // "8-10" — aim at the top of the range, which is what the set should feel like.
+  return Math.max(...nums.map(Number));
+}
+
+/**
+ * Starting weight for an autoregulated lift with no logged history, derived
+ * from the tested max via the RPE chart. Only possible for movements that
+ * reference a max; a cable fly has no 1RM to work from.
+ */
+export function rpeLoadEstimate(item, wib) {
+  const s = get();
+  const ref = refFor(item);
+  if (!ref) return null;
+  const max = s.maxes[ref];
+  if (!max) return null;
+
+  const reps = repsFromPrescription(atWeek(item.reps, wib));
+  const rpe = atWeek(item.rpe, wib);
+  if (!reps || !rpe) return null;
+
+  const keys = Object.keys(RPE10_PCT).map(Number);
+  const nearest = keys.reduce((a, b) => (Math.abs(b - reps) < Math.abs(a - reps) ? b : a));
+  const pct = RPE10_PCT[nearest] - (10 - rpe) * PER_RPE;
+  if (pct <= 0) return null;
+
+  return { weight: roundPlate(max * pct, s.prefs.plateInc), pct, reps, rpe };
 }
 
 /* -------------------------------------------------------------- SESSION LOG */
@@ -313,6 +360,45 @@ export function metricAvg(key, n = 7) {
   const arr = metricSeries(key).slice(-n);
   if (!arr.length) return null;
   return +(arr.reduce((a, p) => a + p.v, 0) / arr.length).toFixed(1);
+}
+
+/**
+ * Least-squares trend through recent bodyweight entries, in lb/week.
+ *
+ * Day-to-day bodyweight swings 3-4 lb on water alone, so a single pair of
+ * weigh-ins says nothing. This needs a real span and several points before it
+ * will commit to a number.
+ */
+export function weightTrend(days = 28) {
+  const arr = metricSeries('bodyweight');
+  if (arr.length < 3) return null;
+
+  const cutoff = Date.now() - days * 86400000;
+  const pts = arr
+    .map(p => ({ t: Date.parse(p.d), v: p.v }))
+    .filter(p => Number.isFinite(p.t) && p.t >= cutoff);
+  if (pts.length < 3) return null;
+
+  const t0 = pts[0].t;
+  const xs = pts.map(p => (p.t - t0) / 86400000);
+  const ys = pts.map(p => p.v);
+  const spanDays = xs[xs.length - 1];
+  if (spanDays < 10) return null; // too short a window to mean anything
+
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+  let num = 0, den = 0;
+  for (let k = 0; k < xs.length; k++) {
+    num += (xs[k] - mx) * (ys[k] - my);
+    den += (xs[k] - mx) ** 2;
+  }
+  if (!den) return null;
+
+  return {
+    perWeek: +((num / den) * 7).toFixed(2),
+    n: pts.length,
+    spanDays: Math.round(spanDays)
+  };
 }
 
 /* -------------------------------------------------------------- PROGRESS */

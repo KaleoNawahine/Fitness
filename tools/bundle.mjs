@@ -80,7 +80,8 @@ const css = readFileSync(join(ROOT, 'css', 'app.css'), 'utf8');
 const favicon = readFileSync(join(ROOT, 'icons', 'favicon.svg'), 'utf8');
 const faviconUrl = `data:image/svg+xml,${encodeURIComponent(favicon)}`;
 
-const html = `<title>Above the Net</title>
+const html = `<meta charset="utf-8">
+<title>Above the Net</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0d10">
 <meta name="apple-mobile-web-app-capable" content="yes">

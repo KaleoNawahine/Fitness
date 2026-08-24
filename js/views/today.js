@@ -119,6 +119,14 @@ function isSupportSection(name) {
   return /prep|recovery|down-regulate|flow|tissue/i.test(name);
 }
 
+/**
+ * Warm-ups, armor and durability work do not need load guidance — you are not
+ * chasing a number on a band pull-apart.
+ */
+function wantsLoadGuidance(name) {
+  return !/prep|armor|durability|recovery|flow|tissue|spring|aerobic/i.test(name);
+}
+
 function countSets(session, wib) {
   let n = 0;
   for (const sec of session.sections) {
@@ -174,6 +182,9 @@ function exerciseCard(item, idx, ctx, sec) {
   const reps = atWeek(item.reps, wib);
   const rpe = atWeek(item.rpe, wib);
   const target = store.targetLoad(item, wib);
+  // Whatever weight the check-off button should pre-fill: the percentage
+  // target, or failing that whatever the app suggested or estimated.
+  let fallbackWeight = target;
   const isVariant = sec.notes && /pick one/i.test(sec.notes);
   const variantOff = isVariant && isSuppressedVariant(item.ex);
 
@@ -218,9 +229,10 @@ function exerciseCard(item, idx, ctx, sec) {
         ) : null
       )
     );
-  } else if (rpe && def.loadType === 'rpe') {
+  } else if (rpe && wantsLoadGuidance(sec.name)) {
     const sug = store.suggestLoad(item, item.ex, week, day);
     if (sug) {
+      fallbackWeight = sug.suggested;
       card.append(
         h('div', { class: 'loadbar loadbar--sug' },
           h('div', { class: 'loadbar-main' },
@@ -230,6 +242,28 @@ function exerciseCard(item, idx, ctx, sec) {
           h('span', { class: 'loadbar-hint', text: `last time ${sug.last.w} lb × ${sug.last.r || '?'}${sug.last.rpe ? ` @ RPE ${sug.last.rpe}` : ''}` })
         )
       );
+    } else {
+      // No history yet. Estimate from the tested max where the movement has
+      // one, and otherwise say plainly how to pick the first weight.
+      const est = store.rpeLoadEstimate(item, wib);
+      if (est) {
+        fallbackWeight = est.weight;
+        card.append(
+          h('div', { class: 'loadbar loadbar--est' },
+            h('div', { class: 'loadbar-main' },
+              h('span', { class: 'loadbar-num', text: `${est.weight}` }),
+              h('span', { class: 'loadbar-unit', text: 'lb' })
+            ),
+            h('span', { class: 'loadbar-hint', text: `estimated start · ${Math.round(est.pct * 100)}% of your max for ${est.reps} @ RPE ${est.rpe}` })
+          )
+        );
+      } else {
+        card.append(
+          h('div', { class: 'loadbar loadbar--first' },
+            h('span', { class: 'loadbar-hint', text: `First time: pick a weight you could do about ${reps} reps with, stopping ${rpeGap(rpe)}. Log it and the app takes over from here.` })
+          )
+        );
+      }
     }
   }
 
@@ -244,7 +278,7 @@ function exerciseCard(item, idx, ctx, sec) {
   const rowCount = support ? 1 : sets;
   for (let n = 1; n <= rowCount; n++) {
     rows.append(setRow({
-      item, def, n, idx, target, reps, rpe, needsLoad, ctx,
+      item, def, n, idx, target: fallbackWeight, reps, rpe, needsLoad, ctx,
       staticText: support ? (sets > 1 ? `${sets} × ${reps}` : String(reps || 'done')) : null
     }));
   }
@@ -258,6 +292,25 @@ function exerciseCard(item, idx, ctx, sec) {
   }
 
   return card;
+}
+
+/**
+ * The rep number to aim at. For a range like "8-10" that is the top — it is
+ * what the suggested load was calculated for.
+ */
+function repsTarget(reps) {
+  if (typeof reps === 'number') return reps;
+  const nums = String(reps ?? '').match(/\d+/g);
+  return nums ? Math.max(...nums.map(Number)) : null;
+}
+
+/** Plain-English rendering of an RPE target. */
+function rpeGap(rpe) {
+  const left = Math.max(0, Math.round((10 - rpe) * 10) / 10);
+  if (left <= 0.5) return 'at genuine failure';
+  if (left <= 1) return 'with 1 rep left in the tank';
+  if (left <= 2) return `with about ${Math.round(left)} reps left in the tank`;
+  return `well short of failure (about ${Math.round(left)} reps left)`;
 }
 
 function isSuppressedVariant(exId) {
@@ -286,8 +339,9 @@ function setRow({ item, def, n, idx, target, reps, rpe, needsLoad, ctx, staticTe
     'aria-label': 'Weight',
     oninput: e => store.logSet(week, day, key, { w: num(e.target.value) })
   });
+  const repTgt = repsTarget(reps);
   const rIn = numberInput({
-    placeholder: typeof reps === 'number' ? String(reps) : String(reps || '').replace(/[^\d]/g, '') || '—',
+    placeholder: repTgt != null ? String(repTgt) : '—',
     value: data.r ?? '',
     'aria-label': 'Reps',
     oninput: e => store.logSet(week, day, key, { r: num(e.target.value) })
@@ -314,9 +368,8 @@ function setRow({ item, def, n, idx, target, reps, rpe, needsLoad, ctx, staticTe
         const patch = { done: nowDone };
         if (nowDone) {
           if (needsLoad && !wIn.value && target) { patch.w = target; wIn.value = target; }
-          if (needsLoad && !rIn.value) {
-            const r = typeof reps === 'number' ? reps : parseInt(String(reps).match(/\d+/)?.[0] || '', 10);
-            if (r) { patch.r = r; rIn.value = r; }
+          if (needsLoad && !rIn.value && repTgt != null) {
+            patch.r = repTgt; rIn.value = repTgt;
           }
         }
         store.logSet(week, day, key, patch);

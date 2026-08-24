@@ -1,6 +1,9 @@
-import { h, clear, ring, toast, sheet, numberInput } from '../ui.js';
+import { h, clear, toast, sheet, numberInput } from '../ui.js';
 import * as store from '../store.js';
-import { computeTargets, projectedWeight, RULES, SUPPLEMENTS, MEAL_TEMPLATE } from '../data/nutrition.js';
+import {
+  computeTargets, projectedWeight, weeksToGoal, surplusAdvice,
+  GOALS, RULES, SUPPLEMENTS, MEAL_TEMPLATE, SHAKE
+} from '../data/nutrition.js';
 import { blockForWeek, weekSessions, TOTAL_WEEKS } from '../data/program.js';
 
 export function render(root, nav) {
@@ -19,7 +22,7 @@ export function render(root, nav) {
       h('div', { class: 'hdr-top' },
         h('div', null,
           h('h1', { class: 'hdr-title', text: 'Fuel' }),
-          h('p', { class: 'hdr-sub', text: `${isTrainingDay ? 'Training day' : 'Rest day'} targets · recalculated from your ${profile.weightLb} lb bodyweight` })
+          h('p', { class: 'hdr-sub', text: `${t.goalName} · ${isTrainingDay ? 'training day' : 'rest day'} · from your ${profile.weightLb} lb bodyweight` })
         )
       )
     )
@@ -28,10 +31,10 @@ export function render(root, nav) {
   const body = h('div', { class: 'stack' });
   root.append(body);
 
-  /* --------------------------------------------------------- today's numbers */
+  /* ------------------------------------------------------- today's numbers */
   body.append(
     h('div', { class: 'card card--hero' },
-      h('span', { class: 'hero-cap', text: isTrainingDay ? "Today — training day" : 'Today — rest day' }),
+      h('span', { class: 'hero-cap', text: isTrainingDay ? 'Today — training day' : 'Today — rest day' }),
       h('div', { class: 'hero-row' },
         h('span', { class: 'hero-num', text: `${target.kcal}` }),
         h('span', { class: 'hero-unit', text: 'kcal' })
@@ -42,10 +45,13 @@ export function render(root, nav) {
         macro('Fat', target.fat, 'g', '#e5484d')
       ),
       h('p', { class: 'note-inline', text: isTrainingDay
-        ? 'Training days sit just under maintenance so nothing about your performance suffers. Carbs stay high on purpose — a max jump is powered almost entirely by stored glycogen.'
-        : 'Rest days carry the deficit. You are not fueling a session, so this is where the fat loss comes from without ever costing you a jump.' })
+        ? 'Training days carry the bigger surplus, because that is the food you can actually put to use. Most of the extra should arrive as carbs around your session.'
+        : 'Rest days sit much closer to maintenance. You are not fuelling a session, so there is no reason to eat like you are.' })
     )
   );
+
+  /* --------------------------------------------------------- the rate check */
+  body.append(rateCard(t, root, nav));
 
   /* ------------------------------------------------------------- both days */
   body.append(
@@ -58,12 +64,23 @@ export function render(root, nav) {
       h('div', { class: 'kvlist' },
         kv('Maintenance (TDEE)', `${t.tdee} kcal`),
         kv('Weekly average', `${t.weeklyAvg} kcal`),
-        kv('Weekly deficit', `${t.deficitPerWeek} kcal ≈ ${(t.deficitPerWeek / 3500).toFixed(1)} lb of fat`),
+        kv('Weekly surplus', `${t.weeklyDelta > 0 ? '+' : ''}${t.weeklyDelta} kcal ≈ ${(t.weeklyDelta / 3500).toFixed(2)} lb`),
+        kv('Target rate', `${t.targetRate > 0 ? '+' : ''}${t.targetRate} lb / week`),
         kv('Water floor', `${t.water} oz + 20–30 oz per hour on court`),
         kv('Fiber', `${t.fiber} g`),
         kv('Sodium', t.sodium)
       ),
-      h('p', { class: 'note-inline', text: `At this rate you should land near ${projectedWeight(profile.weightLb, TOTAL_WEEKS, t.deficitPerWeek)} lb by week 16 — visibly leaner, same or better strength. That is deliberately slow. Faster cuts cost vertical inches.` })
+      goalProjection(profile, t)
+    )
+  );
+
+  /* --------------------------------------------------------------- the shake */
+  body.append(
+    h('div', { class: 'card card--shake' },
+      h('h2', { class: 'sect-title', text: SHAKE.name }),
+      h('p', { class: 'muted', text: SHAKE.note }),
+      h('ul', { class: 'shakelist' }, SHAKE.items.map(x => h('li', { text: x }))),
+      h('span', { class: 'meal-macro', text: SHAKE.macro })
     )
   );
 
@@ -71,7 +88,7 @@ export function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'A day that hits the numbers' }),
-      h('p', { class: 'muted', text: 'One worked example, not a rule. Swap foods freely — just keep protein per meal and total carbs where they are.' }),
+      h('p', { class: 'muted', text: 'One worked example on a training day, not a rule. Swap foods freely — keep the protein per feeding and the total carbs where they are.' }),
       h('div', { class: 'meals' },
         MEAL_TEMPLATE.map(m => h('div', { class: 'meal' },
           h('div', { class: 'meal-head' },
@@ -118,12 +135,46 @@ export function render(root, nav) {
   body.append(
     h('div', { class: 'card' },
       h('h2', { class: 'sect-title', text: 'Recalibrate' }),
-      h('p', { class: 'muted', text: 'These numbers come from your bodyweight, height, age, and how much you train. Update them and everything above recalculates.' }),
+      h('p', { class: 'muted', text: 'Everything above is derived from your bodyweight, height, age, training load and goal. Change any of them and the whole plan recalculates.' }),
       h('button', { class: 'btn btn--ghost', onclick: () => openCalibrate(root, nav) }, 'Adjust my inputs')
     )
   );
 
   body.append(h('div', { class: 'spacer' }));
+}
+
+/* ----------------------------------------------------------------- pieces */
+
+function rateCard(t, root, nav) {
+  const trend = store.weightTrend(28);
+  const advice = surplusAdvice(trend ? trend.perWeek : null, t.targetRate);
+
+  return h('div', { class: `card card--advice is-${advice.tone}` },
+    h('div', { class: 'advice-head' },
+      h('span', { class: 'hero-cap', text: 'Am I eating the right amount?' }),
+      trend ? h('span', { class: 'chip', text: `${trend.n} weigh-ins · ${trend.spanDays} days` }) : null
+    ),
+    h('p', { class: 'advice-line', text: advice.headline }),
+    h('p', { class: 'muted', text: advice.detail }),
+    advice.kcalDelta ? h('p', { class: 'note-inline', text:
+      `That works out to about ${t.train.kcal + advice.kcalDelta} kcal on training days instead of ${t.train.kcal}. Adjust, hold it for two weeks, then look again.` }) : null,
+    h('button', {
+      class: 'btn btn--ghost btn--sm',
+      onclick: () => nav('progress')
+    }, 'Log a weigh-in')
+  );
+}
+
+function goalProjection(profile, t) {
+  const goalW = profile.goalWeight;
+  if (!goalW || !t.targetRate) return null;
+  const weeks = weeksToGoal(profile.weightLb, goalW, t.targetRate);
+  if (weeks == null) return null;
+  if (weeks === 0) {
+    return h('p', { class: 'note-inline', text: `You are at your ${goalW} lb target. Switch the goal to "Maintain" to hold here, or "Lean out" to sharpen up at this weight.` });
+  }
+  return h('p', { class: 'note-inline', text:
+    `At ${t.targetRate} lb a week, ${profile.weightLb} to ${goalW} lb is about ${weeks} weeks — roughly ${(weeks / 4.35).toFixed(1)} months. The program runs ${TOTAL_WEEKS} weeks, so it is built to land right about there.` });
 }
 
 function macro(name, val, unit, color) {
@@ -156,19 +207,28 @@ function kv(k, v) {
 function openCalibrate(root, nav) {
   const p = store.get().profile;
   const wt = numberInput({ value: p.weightLb, class: 'num num--wide' });
+  const gw = numberInput({ value: p.goalWeight, class: 'num num--wide' });
   const ht = numberInput({ value: p.heightIn, class: 'num num--wide' });
   const age = numberInput({ value: p.age, class: 'num num--wide' });
+  const goal = h('select', { class: 'sel' },
+    Object.entries(GOALS).map(([k, g]) => h('option', {
+      value: k, text: `${g.name} (${g.rate > 0 ? '+' : ''}${g.rate} lb/wk)`, selected: p.goal === k
+    }))
+  );
   const act = h('select', { class: 'sel' },
     [
       { v: 1.55, l: 'Lifting only, mostly desk-bound' },
-      { v: 1.7, l: 'Lifting 5× + volleyball 2–3× (default)' },
-      { v: 1.85, l: 'Lifting 5× + volleyball 4–5×' },
+      { v: 1.7, l: 'Lifting 5–6× + volleyball 2–3× (default)' },
+      { v: 1.85, l: 'Lifting 5–6× + volleyball 4–5×' },
       { v: 2.0, l: 'Two-a-days / tournament weeks' }
     ].map(o => h('option', { value: o.v, text: o.l, selected: Math.abs(o.v - p.activity) < 0.01 }))
   );
 
   sheet('Your inputs', h('div', { class: 'formstack' },
+    field('Goal', goal),
+    h('p', { class: 'muted', text: Object.values(GOALS).map(g => `${g.name}: ${g.blurb}`).join('\n') }),
     field('Bodyweight (lb)', wt),
+    field('Target weight (lb)', gw),
     field('Height (in)', ht),
     field('Age', age),
     field('Activity level', act)
@@ -179,9 +239,11 @@ function openCalibrate(root, nav) {
       onClick: () => {
         store.update(s => {
           s.profile.weightLb = parseFloat(wt.value) || s.profile.weightLb;
+          s.profile.goalWeight = parseFloat(gw.value) || s.profile.goalWeight;
           s.profile.heightIn = parseFloat(ht.value) || s.profile.heightIn;
           s.profile.age = parseInt(age.value, 10) || s.profile.age;
           s.profile.activity = parseFloat(act.value) || s.profile.activity;
+          s.profile.goal = goal.value;
         });
         toast('Targets recalculated');
         render(root, nav);

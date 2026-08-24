@@ -154,6 +154,24 @@ const walk = await page.evaluate(async () => {
       if (!(mins > 5 && mins < 180)) issues.push(`wk${w} ${s.id}: implausible duration ${mins}m`);
     }
   }
+  // Gaining-phase specific checks.
+  for (let w = 1; w <= prog.TOTAL_WEEKS; w++) {
+    const pat = prog.weeklySetsByPattern(w);
+    for (const [k, v] of Object.entries(pat)) {
+      if (!Number.isFinite(v) || v < 0) issues.push(`wk${w}: pattern ${k} = ${v}`);
+    }
+    if (!prog.isTestWeek(w) && !prog.isDeloadWeek(w)) {
+      for (const key of ['squat', 'hinge', 'push', 'pull']) {
+        if ((pat[key] || 0) < 6) issues.push(`wk${w}: only ${pat[key] || 0} ${key} sets — too little for hypertrophy`);
+      }
+    }
+    // Every loading week must still contain jump work. The test week measures
+    // jumps instead of training them, so it is exempt.
+    if (!prog.isTestWeek(w) && (pat.plyo || 0) < 2) {
+      issues.push(`wk${w}: only ${pat.plyo || 0} jump sets — athleticism unprotected`);
+    }
+  }
+
   return { sessions, items, issues };
 });
 console.log(`\nWalked ${walk.sessions} sessions / ${walk.items} prescribed items`);

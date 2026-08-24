@@ -1,6 +1,7 @@
 import { h, clear, toast, sheet, numberInput, confirmSheet } from '../ui.js';
 import * as store from '../store.js';
 import { MAX_LIFTS, blockForWeek, TOTAL_WEEKS } from '../data/program.js';
+import { GOALS } from '../data/nutrition.js';
 import { EXERCISES } from '../data/exercises.js';
 
 export function render(root, nav) {
@@ -66,7 +67,7 @@ export function render(root, nav) {
           onclick: () => { store.setWeek(store.currentWeek() + 1); render(root, nav); }
         }, '+')
       ),
-      h('p', { class: 'muted', text: 'The week advances on its own once you finish all five sessions. Move it manually if you need to skip ahead or repeat one.' })
+      h('p', { class: 'muted', text: 'The week advances on its own once you finish the five main sessions — the Saturday Pump day is optional and does not hold you back. Move it manually to skip ahead or repeat a week.' })
     )
   );
 
@@ -78,6 +79,16 @@ export function render(root, nav) {
         field('Name', h('input', {
           class: 'num num--wide', type: 'text', value: s.profile.name, placeholder: 'Your name',
           onchange: e => store.update(st => { st.profile.name = e.target.value; })
+        })),
+        field('Goal', h('select', {
+          class: 'sel',
+          onchange: e => { store.update(st => { st.profile.goal = e.target.value; }); toast('Fuel targets updated'); }
+        }, Object.entries(GOALS).map(([k, g]) => h('option', {
+          value: k, text: `${g.name} (${g.rate > 0 ? '+' : ''}${g.rate} lb/wk)`, selected: s.profile.goal === k
+        })))),
+        field('Target weight (lb)', numberInput({
+          value: s.profile.goalWeight,
+          onchange: e => store.update(st => { st.profile.goalWeight = parseFloat(e.target.value) || st.profile.goalWeight; })
         })),
         field('Bodyweight (lb)', numberInput({
           value: s.profile.weightLb,
@@ -184,7 +195,7 @@ export function render(root, nav) {
   );
 
   body.append(h('footer', { class: 'appfoot' },
-    h('p', { text: 'Above the Net · a 16-week block plan built around your jump' }),
+    h('p', { text: `Frame · a ${TOTAL_WEEKS}-week lean-mass plan built around your jump` }),
     h('p', { class: 'muted small', text: 'General fitness guidance, not medical advice. Sharp or persistent pain means see a professional, not push through.' })
   ));
 
